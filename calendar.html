@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Study App - Dynamic Calendar</title>
+    <title>Study App - Clean Calendar</title>
     <style>
         :root {
             --primary-yellow: #ffde59;
@@ -15,7 +15,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            font-family: 'Segoe UI', sans-serif; 
             background-color: var(--bg-gray); 
             padding: 20px; 
             color: var(--text-dark);
@@ -38,7 +38,6 @@
             box-shadow: 0 10px 40px rgba(0,0,0,0.05);
         }
 
-        /* Controls Section */
         .header-controls {
             display: flex;
             justify-content: space-between;
@@ -65,20 +64,12 @@
 
         #monthDisplay { font-size: 1.8rem; font-weight: 900; }
 
-        /* Grid Layouts */
         .calendar-grid {
             display: grid;
             gap: 12px;
-            transition: all 0.3s ease;
         }
 
-        /* Month View Specifics */
-        .grid-month { grid-template-columns: repeat(7, 1fr); }
-        
-        /* Week View Specifics */
-        .grid-week { grid-template-columns: repeat(7, 1fr); }
-
-        /* Day View Specifics */
+        .grid-month, .grid-week { grid-template-columns: repeat(7, 1fr); }
         .grid-day { grid-template-columns: 1fr; }
 
         .day-header { 
@@ -93,39 +84,30 @@
             min-height: 120px;
             border: 1px solid #f0f0f0;
             border-radius: 15px;
-            padding: 10px;
+            padding: 15px;
             display: flex;
             flex-direction: column;
+            align-items: center;
+            justify-content: center;
             transition: 0.2s;
+            text-align: center;
         }
 
-        .day-box:hover { background-color: #fffef0; border-color: var(--primary-yellow); }
-        
+        /* Today Highlight (Works in all views) */
         .today { 
             background-color: var(--primary-yellow) !important; 
-            border-color: var(--primary-yellow);
+            border-color: var(--primary-yellow) !important;
+            box-shadow: 0 4px 12px rgba(255, 222, 89, 0.4);
         }
+
+        .day-title { font-weight: 800; font-size: 1.2rem; }
+        .day-subtitle { font-size: 0.8rem; color: #888; margin-top: 4px; }
 
         .padding-day { background-color: #fafafa; opacity: 0.3; }
 
-        /* Task Input Area for Day/Week View */
-        .task-input {
-            width: 100%;
-            border: none;
-            background: transparent;
-            font-family: inherit;
-            resize: none;
-            outline: none;
-            margin-top: 5px;
-            font-size: 0.9rem;
-            color: #444;
-        }
-
-        .day-title { font-weight: 800; font-size: 1.1rem; margin-bottom: 5px; }
-
         @media (max-width: 768px) {
             .grid-week { grid-template-columns: 1fr; }
-            #monthDisplay { font-size: 1.4rem; order: -1; width: 100%; text-align: center; }
+            #monthDisplay { font-size: 1.4rem; width: 100%; text-align: center; }
         }
     </style>
 </head>
@@ -149,22 +131,18 @@
             </div>
         </div>
 
-        <div id="calendarGrid" class="calendar-grid grid-month">
-            </div>
+        <div id="calendarGrid" class="calendar-grid grid-month"></div>
     </div>
 
     <script>
-        let nav = 0; // Displacement from current date
-        let view = 'month'; // 'day', 'week', 'month'
+        let nav = 0; 
+        let view = 'month';
         const calendarGrid = document.getElementById('calendarGrid');
         const monthDisplay = document.getElementById('monthDisplay');
 
-        function init() {
-            render();
-        }
-
         function render() {
             const dt = new Date();
+            // Adjust date based on navigation
             if (nav !== 0) {
                 if (view === 'month') dt.setMonth(new Date().getMonth() + nav);
                 else if (view === 'week') dt.setDate(new Date().getDate() + (nav * 7));
@@ -172,11 +150,18 @@
             }
 
             calendarGrid.innerHTML = '';
-            calendarGrid.className = 'calendar-grid'; // Reset
+            calendarGrid.className = 'calendar-grid';
 
             if (view === 'month') renderMonthView(dt);
             else if (view === 'week') renderWeekView(dt);
             else renderDayView(dt);
+        }
+
+        function isToday(date) {
+            const today = new Date();
+            return date.getDate() === today.getDate() &&
+                   date.getMonth() === today.getMonth() &&
+                   date.getFullYear() === today.getFullYear();
         }
 
         function renderMonthView(dt) {
@@ -202,9 +187,10 @@
             }
 
             for(let i = 1; i <= daysInMonth; i++) {
+                const dateObj = new Date(year, month, i);
                 const d = document.createElement('div');
                 d.className = 'day-box';
-                if (i === new Date().getDate() && nav === 0) d.classList.add('today');
+                if (isToday(dateObj)) d.classList.add('today');
                 d.innerHTML = `<div class="day-title">${i}</div>`;
                 calendarGrid.appendChild(d);
             }
@@ -215,38 +201,35 @@
             const startOfWeek = new Date(dt);
             startOfWeek.setDate(dt.getDate() - dt.getDay());
             
-            monthDisplay.innerText = "Week of " + startOfWeek.toLocaleDateString('en-us', { month: 'short', day: 'numeric' });
+            monthDisplay.innerText = "Week View";
 
             for(let i = 0; i < 7; i++) {
                 const day = new Date(startOfWeek);
                 day.setDate(startOfWeek.getDate() + i);
-                createTaskBox(day);
+                
+                const box = document.createElement('div');
+                box.className = 'day-box';
+                if (isToday(day)) box.classList.add('today');
+                
+                box.innerHTML = `
+                    <div class="day-title">${day.getDate()}</div>
+                    <div class="day-subtitle">${day.toLocaleDateString('en-us', { weekday: 'short' })}</div>
+                `;
+                calendarGrid.appendChild(box);
             }
         }
 
         function renderDayView(dt) {
             calendarGrid.classList.add('grid-day');
             monthDisplay.innerText = dt.toLocaleDateString('en-us', { weekday: 'long', month: 'long', day: 'numeric' });
-            createTaskBox(dt, true);
-        }
-
-        function createTaskBox(date, isFullDay = false) {
-            const key = `task-${date.toDateString()}`;
-            const savedTask = localStorage.getItem(key) || "";
-
+            
             const box = document.createElement('div');
             box.className = 'day-box';
-            if (isFullDay) box.style.minHeight = '400px';
-
-            box.innerHTML = `
-                <div class="day-title">${date.toLocaleDateString('en-us', { weekday: 'short', day: 'numeric' })}</div>
-                <textarea class="task-input" placeholder="Type study goals..." oninput="saveTask('${key}', this.value)">${savedTask}</textarea>
-            `;
+            box.style.minHeight = '300px';
+            if (isToday(dt)) box.classList.add('today');
+            
+            box.innerHTML = `<div class="day-title" style="font-size: 3rem;">${dt.getDate()}</div>`;
             calendarGrid.appendChild(box);
-        }
-
-        function saveTask(key, value) {
-            localStorage.setItem(key, value);
         }
 
         function moveTime(dir) {
@@ -256,13 +239,13 @@
 
         function changeView(newView) {
             view = newView;
-            nav = 0; // Reset navigation when switching views
+            nav = 0; 
             document.querySelectorAll('.view-switcher button').forEach(b => b.classList.remove('active'));
             document.getElementById(newView + 'Btn').classList.add('active');
             render();
         }
 
-        init();
+        render();
     </script>
 </body>
 </html>
