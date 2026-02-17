@@ -1,0 +1,42 @@
+/* style.css */
+
+/* Reset default margins and padding */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body, html {
+    height: 100%;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Main background container */
+.bg-container {
+    /* Replace 'background.jpg' with your actual image file */
+    background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), 
+                url('background.jpg');
+    background-color: #f0f2f5; /* Backup color */
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    
+    /* Layout */
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 20px;
+}
+
+/* Bold Headline Styling */
+.hero-text {
+    font-size: clamp(2rem, 8vw, 5rem); /* Responsive font size */
+    font-weight: 900;
+    color: #1a1a1b;
+    text-transform: uppercase;
+    letter-spacing: -1px; /* Tighter spacing for a modern bold look */
+    line-height: 1.1;
+}
