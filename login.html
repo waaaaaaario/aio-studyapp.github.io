@@ -101,69 +101,70 @@
 
         <form id="loginForm">
             <div class="form-group">
-                <label>Username</label>
-                <input type="text" id="username" placeholder="Enter your username" required>
+                <label>Email Address</label>
+                <input type="email" id="email" placeholder="Enter your email" required>
             </div>
             <div class="form-group">
                 <label>Password</label>
                 <input type="password" id="password" placeholder="Enter your password" required>
             </div>
-            <button type="submit" class="btn-login">Sign In</button>
+            <button type="submit" id="loginBtn" class="btn-login">Sign In</button>
         </form>
 
         <a href="index.html" class="back-home">← Back to Home</a>
     </div>
 
-    <script>
-        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        const firebaseConfig = {
+    apiKey: "AIzaSyDmOi1Qd1PuSjzV1c2gFN1ZC338x6KYU1M",
+    authDomain: "allinonestudyapp-7eece.firebaseapp.com",
+    projectId: "allinonestudyapp-7eece",
+    storageBucket: "allinonestudyapp-7eece.firebasestorage.app",
+    messagingSenderId: "629338854226",
+    appId: "1:629338854226:web:601ff4fcf19a4e6f78208b"
+  };
+
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        const loginForm = document.getElementById('loginForm');
+        const loginBtn = document.getElementById('loginBtn');
+
+        loginForm.addEventListener('submit', (e) => {
             e.preventDefault();
 
-            const usernameInput = document.getElementById('username').value;
-            const passwordInput = document.getElementById('password').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
 
-            try {
-                // 1. Fetch the official user list from your GitHub repository file
-                // Ensure users.json is in the same folder as login.html
-                const response = await fetch('users.json');
-                
-                if (!response.ok) {
-                    throw new Error("Could not find users.json file");
-                }
-                
-                const officialUsers = await response.json();
+            // Visual feedback
+            loginBtn.innerText = "Verifying...";
+            loginBtn.disabled = true;
 
-                // 2. Get users who signed up locally in this browser
-                const localUsers = JSON.parse(localStorage.getItem('studyAppUsers')) || [];
-
-                // 3. Combine both lists (Repo users + Browser users)
-                const allUsers = [...officialUsers, ...localUsers];
-
-                // 4. Validate credentials
-                const validUser = allUsers.find(u => 
-                    u.username === usernameInput && u.password === passwordInput
-                );
-
-                if (validUser) {
-                    // Store the session in localStorage so the dashboard knows who logged in
-                    localStorage.setItem('loggedInUser', validUser.username);
+            // 1. Firebase Sign In
+            signInWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    // Success!
+                    const user = userCredential.user;
+                    console.log("Logged in:", user.email);
+                    
+                    // Save to local storage for the dashboard greeting
+                    localStorage.setItem('loggedInUser', user.email);
+                    
                     window.location.href = 'dashboard.html';
-                } else {
-                    alert("Invalid username or password. If you just signed up, make sure you are on the same device/browser!");
-                }
-            } catch (error) {
-                console.error("Auth Error:", error);
-                
-                // Fallback: If users.json fails to load, still check localStorage
-                const localUsers = JSON.parse(localStorage.getItem('studyAppUsers')) || [];
-                const localMatch = localUsers.find(u => u.username === usernameInput && u.password === passwordInput);
-                
-                if (localMatch) {
-                    localStorage.setItem('loggedInUser', localMatch.username);
-                    window.location.href = 'dashboard.html';
-                } else {
-                    alert("System Error: Could not load user database and no local match found.");
-                }
-            }
+                })
+                .catch((error) => {
+                    // Handle Errors
+                    alert("Login failed: " + error.message);
+                    
+                    // Reset button
+                    loginBtn.innerText = "Sign In";
+                    loginBtn.disabled = false;
+                });
         });
     </script>
 
