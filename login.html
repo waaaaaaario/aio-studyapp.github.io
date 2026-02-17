@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign In - StudyApp</title>
@@ -118,54 +119,19 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-        const firebaseConfig = {
-    apiKey: "SEARCH_REPLACE_API_KEY",
-    authDomain: "SEARCH_REPLACE_AUTH_DOMAIN",
-    projectId: "SEARCH_REPLACE_PROJECT_ID",
-    storageBucket: "SEARCH_REPLACE_STORAGE_BUCKET",
-    messagingSenderId: "SEARCH_REPLACE_SENDER_ID",
-    appId: "SEARCH_REPLACE_APP_ID"
-};
+        const supabaseUrl = 'https://your-project.supabase.co';
+const supabaseKey = 'your-anon-public-key';
+const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
+async function login() {
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: 'example@email.com',
+    password: 'password123',
+  });
 
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-
-        const loginForm = document.getElementById('loginForm');
-        const loginBtn = document.getElementById('loginBtn');
-
-        loginForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-
-            // Visual feedback
-            loginBtn.innerText = "Verifying...";
-            loginBtn.disabled = true;
-
-            // 1. Firebase Sign In
-            signInWithEmailAndPassword(auth, email, password)
-                .then((userCredential) => {
-                    // Success!
-                    const user = userCredential.user;
-                    console.log("Logged in:", user.email);
-                    
-                    // Save to local storage for the dashboard greeting
-                    localStorage.setItem('loggedInUser', user.email);
-                    
-                    window.location.href = 'dashboard.html';
-                })
-                .catch((error) => {
-                    // Handle Errors
-                    alert("Login failed: " + error.message);
-                    
-                    // Reset button
-                    loginBtn.innerText = "Sign In";
-                    loginBtn.disabled = false;
-                });
-        });
+  if (error) alert(error.message);
+  else window.location.href = 'dashboard.html';
+}
     </script>
 
 </body>
