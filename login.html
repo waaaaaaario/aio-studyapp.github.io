@@ -87,4 +87,85 @@
             color: #6a11cb;
             text-decoration: none;
             font-size: 0.85rem;
-            font-weight
+            font-weight: 600;
+        }
+
+        .back-home:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <h2>Welcome Back</h2>
+        <p>Sign in to access your dashboard.</p>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="username" placeholder="Enter your username" required>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="password" placeholder="Enter your password" required>
+            </div>
+            <button type="submit" class="btn-login">Sign In</button>
+        </form>
+
+        <a href="index.html" class="back-home">← Back to Home</a>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const usernameInput = document.getElementById('username').value;
+            const passwordInput = document.getElementById('password').value;
+
+            try {
+                // 1. Fetch the official user list from your GitHub repository file
+                // Ensure users.json is in the same folder as login.html
+                const response = await fetch('users.json');
+                
+                if (!response.ok) {
+                    throw new Error("Could not find users.json file");
+                }
+                
+                const officialUsers = await response.json();
+
+                // 2. Get users who signed up locally in this browser
+                const localUsers = JSON.parse(localStorage.getItem('studyAppUsers')) || [];
+
+                // 3. Combine both lists (Repo users + Browser users)
+                const allUsers = [...officialUsers, ...localUsers];
+
+                // 4. Validate credentials
+                const validUser = allUsers.find(u => 
+                    u.username === usernameInput && u.password === passwordInput
+                );
+
+                if (validUser) {
+                    // Store the session in localStorage so the dashboard knows who logged in
+                    localStorage.setItem('loggedInUser', validUser.username);
+                    window.location.href = 'dashboard.html';
+                } else {
+                    alert("Invalid username or password. If you just signed up, make sure you are on the same device/browser!");
+                }
+            } catch (error) {
+                console.error("Auth Error:", error);
+                
+                // Fallback: If users.json fails to load, still check localStorage
+                const localUsers = JSON.parse(localStorage.getItem('studyAppUsers')) || [];
+                const localMatch = localUsers.find(u => u.username === usernameInput && u.password === passwordInput);
+                
+                if (localMatch) {
+                    localStorage.setItem('loggedInUser', localMatch.username);
+                    window.location.href = 'dashboard.html';
+                } else {
+                    alert("System Error: Could not load user database and no local match found.");
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>
