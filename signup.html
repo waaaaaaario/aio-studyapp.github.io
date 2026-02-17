@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up - StudyApp</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -125,60 +126,51 @@
         </div>
     </div>
 
-    <script type="module">
-        // 1. Import the functions you need from the SDKs you need
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
-        // 2. Your web app's Firebase 
-        const firebaseConfig = {
-    apiKey: "SEARCH_REPLACE_API_KEY",
-    authDomain: "SEARCH_REPLACE_AUTH_DOMAIN",
-    projectId: "SEARCH_REPLACE_PROJECT_ID",
-    storageBucket: "SEARCH_REPLACE_STORAGE_BUCKET",
-    messagingSenderId: "SEARCH_REPLACE_SENDER_ID",
-    appId: "SEARCH_REPLACE_APP_ID"
-};
-
-
-        // 3. Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
+    <script>
+        // 2. Initialize Supabase Client with Secrets Placeholders
+        const supabaseUrl = 'SEARCH_REPLACE_SUPABASE_URL';
+        const supabaseKey = 'SEARCH_REPLACE_SUPABASE_KEY';
+        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
         const signupForm = document.getElementById('signupForm');
         const submitBtn = document.getElementById('submitBtn');
 
-        signupForm.addEventListener('submit', (e) => {
+        signupForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            // Change button text to show it's working
+            // Visual feedback
             submitBtn.innerText = "Creating Account...";
             submitBtn.disabled = true;
 
+            const fullName = document.getElementById('fullName').value;
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
-            // 4. Create User
-            createUserWithEmailAndPassword(auth, email, password)
-                .then((userCredential) => {
-                    // Success!
-                    const user = userCredential.user;
-                    console.log("Registered user:", user);
-                    
-                    // Optional: Store the email locally for the dashboard greeting
-                    localStorage.setItem('loggedInUser', email);
-                    
-                    window.location.href = 'dashboard.html';
-                })
-                .catch((error) => {
-                    // Handle Errors here.
-                    const errorMessage = error.message;
-                    alert("Error: " + errorMessage);
-                    
-                    // Reset button if there's an error
-                    submitBtn.innerText = "Create Account";
-                    submitBtn.disabled = false;
-                });
+            // 3. Supabase Sign Up Logic
+            const { data, error } = await supabase.auth.signUp({
+                email: email,
+                password: password,
+                options: {
+                    data: {
+                        full_name: fullName // This stores the name in User Metadata
+                    }
+                }
+            });
+
+            if (error) {
+                alert("Error: " + error.message);
+                submitBtn.innerText = "Create Account";
+                submitBtn.disabled = false;
+            } else {
+                // Success! Supabase automatically logs user in unless email confirmation is on
+                console.log("Registered user:", data.user);
+                
+                // Keep your original localStorage logic if dashboard depends on it
+                localStorage.setItem('loggedInUser', email);
+                
+                // Redirect
+                window.location.href = 'dashboard.html';
+            }
         });
     </script>
 
