@@ -1,130 +1,35 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign In - StudyApp</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            /* Matching your home page gradient */
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+<script>
+    document.querySelector('form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const usernameInput = document.querySelector('input[type="text"]').value;
+        const passwordInput = document.querySelector('input[type="password"]').value;
+
+        try {
+            // 1. Fetch the "database" file from your repository
+            const response = await fetch('users.json');
+            const officialUsers = await response.json();
+
+            // 2. Also get any local users (the ones who signed up in this browser)
+            const localUsers = JSON.parse(localStorage.getItem('studyAppUsers')) || [];
+
+            // 3. Combine both lists
+            const allUsers = [...officialUsers, ...localUsers];
+
+            // 4. Check for a match
+            const validUser = allUsers.find(u => 
+                u.username === usernameInput && u.password === passwordInput
+            );
+
+            if (validUser) {
+                localStorage.setItem('loggedInUser', validUser.username);
+                window.location.href = 'dashboard.html';
+            } else {
+                alert("Invalid credentials. Note: New signups are only saved to this browser!");
+            }
+        } catch (error) {
+            console.error("Error loading user file:", error);
+            alert("Could not connect to the user database.");
         }
-
-        .login-card {
-            background: white;
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-        }
-
-        .login-card h2 {
-            margin-bottom: 10px;
-            color: #333;
-            font-size: 2rem;
-        }
-
-        .login-card p {
-            color: #777;
-            margin-bottom: 30px;
-            font-size: 0.9rem;
-        }
-
-        .form-group {
-            text-align: left;
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: #555;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #eee;
-            border-radius: 10px;
-            outline: none;
-            transition: border-color 0.3s;
-        }
-
-        .form-group input:focus {
-            border-color: #6a11cb;
-        }
-
-        .btn-login {
-            width: 100%;
-            padding: 12px;
-            background: #6a11cb;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.3s;
-            margin-top: 10px;
-        }
-
-        .btn-login:hover {
-            background: #2575fc;
-        }
-
-        .back-home {
-            display: inline-block;
-            margin-top: 20px;
-            color: #6a11cb;
-            text-decoration: none;
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
-
-        .back-home:hover { text-decoration: underline; }
-    </style>
-</head>
-<body>
-
-    <div class="login-card">
-        <h2>Welcome Back</h2>
-        <p>Please enter your details to sign in.</p>
-
-        <form>
-            <div class="form-group">
-                <label>Username</label>
-                <input type="text" placeholder="Enter your username" required>
-            </div>
-            <div class="form-group">
-                <label>Password</label>
-                <input type="password" placeholder="Enter your password" required>
-            </div>
-            <button type="submit" class="btn-login">Sign In</button>
-        </form>
-
-        <a href="index.html" class="back-home">← Back to Home</a>
-    </div>
-    <script>
-    // This script catches the login attempt
-    const loginForm = document.querySelector('form');
-    
-    loginForm.addEventListener('submit', function(e) {
-        e.preventDefault(); // Stops the page from just refreshing
-        
-        // In a real app, we would check the password here.
-        // For now, any input will trigger the redirect.
-        window.location.href = 'dashboard.html'; 
     });
 </script>
-</body>
-</html>
