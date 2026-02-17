@@ -1,0 +1,26 @@
+name: Deploy to Firebase Hosting
+on:
+  push:
+    branches:
+      - main  # This triggers the deploy whenever you push to main
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Inject Secrets
+        run: |
+          sed -i "s|SEARCH_REPLACE_API_KEY|${{ secrets.FIREBASE_API_KEY }}|g" login.html signup.html
+          sed -i "s|SEARCH_REPLACE_AUTH_DOMAIN|${{ secrets.FIREBASE_AUTH_DOMAIN }}|g" login.html signup.html
+          sed -i "s|SEARCH_REPLACE_PROJECT_ID|${{ secrets.FIREBASE_PROJECT_ID }}|g" login.html signup.html
+          sed -i "s|SEARCH_REPLACE_STORAGE_BUCKET|${{ secrets.FIREBASE_STORAGE_BUCKET }}|g" login.html signup.html
+          sed -i "s|SEARCH_REPLACE_SENDER_ID|${{ secrets.FIREBASE_SENDER_ID }}|g" login.html signup.html
+          sed -i "s|SEARCH_REPLACE_APP_ID|${{ secrets.FIREBASE_APP_ID }}|g" login.html signup.html
+
+      - uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
+          channelId: live
+          projectId: your-project-id
