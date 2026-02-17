@@ -106,17 +106,17 @@
         <form id="signupForm">
             <div class="form-group">
                 <label>Full Name</label>
-                <input type="text" placeholder="John Doe" required>
+                <input type="text" id="fullName" placeholder="John Doe" required>
             </div>
             <div class="form-group">
                 <label>Email Address</label>
-                <input type="email" placeholder="name@example.com" required>
+                <input type="email" id="email" placeholder="name@example.com" required>
             </div>
             <div class="form-group">
                 <label>Password</label>
-                <input type="password" placeholder="Create a password" required>
+                <input type="password" id="password" placeholder="Create a password (min 6 chars)" required>
             </div>
-            <button type="submit" class="btn-signup">Create Account</button>
+            <button type="submit" id="submitBtn" class="btn-signup">Create Account</button>
         </form>
 
         <div class="footer-links">
@@ -125,12 +125,61 @@
         </div>
     </div>
 
-    <script>
-        // Catch the form submission
-        document.getElementById('signupForm').addEventListener('submit', function(e) {
-            e.preventDefault(); 
-            // Redirect to dashboard immediately
-            window.location.href = 'dashboard.html';
+    <script type="module">
+        // 1. Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        // 2. Your web app's Firebase configuration
+        // !!! REPLACE THIS WITH YOUR ACTUAL CONFIG FROM FIREBASE CONSOLE !!!
+        const firebaseConfig = {
+    apiKey: "AIzaSyDmOi1Qd1PuSjzV1c2gFN1ZC338x6KYU1M",
+    authDomain: "allinonestudyapp-7eece.firebaseapp.com",
+    projectId: "allinonestudyapp-7eece",
+    storageBucket: "allinonestudyapp-7eece.firebasestorage.app",
+    messagingSenderId: "629338854226",
+    appId: "1:629338854226:web:601ff4fcf19a4e6f78208b"
+  };
+
+
+        // 3. Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        const signupForm = document.getElementById('signupForm');
+        const submitBtn = document.getElementById('submitBtn');
+
+        signupForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            // Change button text to show it's working
+            submitBtn.innerText = "Creating Account...";
+            submitBtn.disabled = true;
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            // 4. Create User
+            createUserWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    // Success!
+                    const user = userCredential.user;
+                    console.log("Registered user:", user);
+                    
+                    // Optional: Store the email locally for the dashboard greeting
+                    localStorage.setItem('loggedInUser', email);
+                    
+                    window.location.href = 'dashboard.html';
+                })
+                .catch((error) => {
+                    // Handle Errors here.
+                    const errorMessage = error.message;
+                    alert("Error: " + errorMessage);
+                    
+                    // Reset button if there's an error
+                    submitBtn.innerText = "Create Account";
+                    submitBtn.disabled = false;
+                });
         });
     </script>
 
