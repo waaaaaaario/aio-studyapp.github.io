@@ -5,38 +5,59 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - StudyApp</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f7f6; }
+        :root {
+            --primary-purple: #6a11cb;
+            --secondary-blue: #2575fc;
+            --accent-yellow: #ffde59;
+            --bg-light: #f4f7f6;
+        }
 
-        /* Sidebar Navigation */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-light); }
+
         .layout { display: flex; height: 100vh; }
         
+        /* Sidebar */
         .sidebar {
-            width: 250px;
-            background: #6a11cb;
+            width: 260px;
+            background: linear-gradient(180deg, var(--primary-purple), var(--secondary-blue));
             color: white;
             padding: 30px;
             display: flex;
             flex-direction: column;
+            flex-shrink: 0;
         }
 
-        .sidebar h2 { margin-bottom: 40px; font-size: 1.5rem; }
-        .sidebar a { 
-            color: rgba(255,255,255,0.8); 
+        .sidebar h2 { margin-bottom: 40px; font-size: 1.5rem; letter-spacing: 1px; }
+        
+        .nav-item { 
+            color: rgba(255,255,255,0.7); 
             text-decoration: none; 
-            margin-bottom: 20px; 
+            margin-bottom: 15px; 
             font-weight: 600; 
+            padding: 12px;
+            border-radius: 8px;
+            transition: 0.3s;
+            cursor: pointer;
         }
-        .sidebar a:hover { color: white; }
+
+        .nav-item:hover, .nav-item.active { 
+            background: rgba(255,255,255,0.1); 
+            color: white; 
+        }
 
         /* Main Content Area */
         .main-content { flex: 1; padding: 40px; overflow-y: auto; }
         
+        .content-section { display: none; } /* Hidden by default */
+        .content-section.active { display: block; } /* Shown when active */
+
+        /* Dashboard View Styles */
         .welcome-banner {
             background: white;
             padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
             margin-bottom: 30px;
         }
 
@@ -48,52 +69,150 @@
 
         .stat-card {
             background: white;
-            padding: 20px;
-            border-radius: 12px;
+            padding: 25px;
+            border-radius: 15px;
             text-align: center;
-            border-bottom: 4px solid #ffde59;
+            border-bottom: 5px solid var(--accent-yellow);
         }
 
-        .logout-btn {
-            margin-top: auto;
-            color: #ffb3b3 !important;
+        /* Calendar Internal Styles */
+        .calendar-card {
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
         }
+
+        .cal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+        }
+
+        .day {
+            aspect-ratio: 1/1;
+            border: 1px solid #f0f0f0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+
+        .today { background: var(--accent-yellow); font-weight: bold; border-color: var(--accent-yellow); }
+
+        .logout-btn { margin-top: auto; color: #ffb3b3 !important; }
     </style>
 </head>
 <body>
 
     <div class="layout">
         <nav class="sidebar">
-            <h2>StudyApp</h2>
-            <a href="#">🏠 Dashboard</a>
-            <a href="calendar.html">📅 Calendar</a>
-            <a href="#">📝 My Notes</a>
-            <a href="#">⚙️ Settings</a>
-            <a href="index.html" class="logout-btn">🚪 Log Out</a>
+            <h2>STUDYAPP</h2>
+            <div class="nav-item active" onclick="showSection('dashboard')">🏠 Dashboard</div>
+            <div class="nav-item" onclick="showSection('calendar')">📅 Calendar</div>
+            <div class="nav-item">📝 My Notes</div>
+            <a href="index.html" class="nav-item logout-btn">🚪 Log Out</a>
         </nav>
 
         <main class="main-content">
-            <div class="welcome-banner">
-                <h1>Welcome back, Scholar!</h1>
-                <p>You have 3 tasks remaining for today.</p>
+            
+            <div id="dashboard" class="content-section active">
+                <div class="welcome-banner">
+                    <h1>Welcome back, Scholar!</h1>
+                    <p>You have 3 study sessions planned for this week.</p>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card"><h3>Focus Time</h3><p>12h 30m</p></div>
+                    <div class="stat-card"><h3>Tasks</h3><p>12/15</p></div>
+                    <div class="stat-card"><h3>Streak</h3><p>🔥 5 Days</p></div>
+                </div>
             </div>
 
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <h3>Study Time</h3>
-                    <p>12.5 Hours</p>
-                </div>
-                <div class="stat-card">
-                    <h3>Tasks Done</h3>
-                    <p>85%</p>
-                </div>
-                <div class="stat-card">
-                    <h3>Streak</h3>
-                    <p>5 Days</p>
+            <div id="calendar" class="content-section">
+                <div class="calendar-card">
+                    <div class="cal-header">
+                        <h2 id="monthLabel">February 2026</h2>
+                        <div>
+                            <button onclick="changeMonth(-1)">Prev</button>
+                            <button onclick="changeMonth(1)">Next</button>
+                        </div>
+                    </div>
+                    <div id="calGrid" class="calendar-grid">
+                        </div>
                 </div>
             </div>
+
         </main>
     </div>
 
+    <script>
+        // --- NAVIGATION LOGIC ---
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            // Show selected section
+            document.getElementById(sectionId).classList.add('active');
+            
+            // Update sidebar UI
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+
+            if(sectionId === 'calendar') renderCalendar();
+        }
+
+        // --- CALENDAR LOGIC ---
+        let nav = 0;
+        function renderCalendar() {
+            const dt = new Date();
+            if (nav !== 0) dt.setMonth(new Date().getMonth() + nav);
+
+            const month = dt.getMonth();
+            const year = dt.getFullYear();
+            document.getElementById('monthLabel').innerText = 
+                dt.toLocaleDateString('en-us', { month: 'long', year: 'numeric' });
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const grid = document.getElementById('calGrid');
+            grid.innerHTML = '';
+
+            // Add empty slots for start of month
+            for(let i = 0; i < firstDay; i++) {
+                const empty = document.createElement('div');
+                empty.className = 'day';
+                empty.style.border = 'none';
+                grid.appendChild(empty);
+            }
+
+            // Add days
+            for(let i = 1; i <= daysInMonth; i++) {
+                const day = document.createElement('div');
+                day.className = 'day';
+                day.innerText = i;
+                if(i === new Date().getDate() && nav === 0) day.classList.add('today');
+                grid.appendChild(day);
+            }
+        }
+
+        function changeMonth(dir) {
+            nav += dir;
+            renderCalendar();
+        }
+
+        // Initialize calendar on load
+        renderCalendar();
+    </script>
 </body>
 </html>
