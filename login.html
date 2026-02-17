@@ -115,24 +115,41 @@
         <a href="index.html" class="back-home">← Back to Home</a>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    <script>
+    (function() {
+        // 1. Define the placeholders
+        const supabaseUrl = 'https://hpmbbjcybnzojgsepmdn.supabase.co';
+        const supabaseKey = 'sb_publishable_HAX3ykxTnI81SHifNIyUwA_-BomdZrH';
 
-        const supabaseUrl = 'https://your-project.supabase.co';
-const supabaseKey = 'your-anon-public-key';
-const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+        // 2. INITIALIZE FIRST (This must happen before line 124!)
+        // We use 'supabase.createClient' because the CDN library 
+        // puts a global 'supabase' object in your browser.
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-async function login() {
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email: 'example@email.com',
-    password: 'password123',
-  });
+        const loginForm = document.getElementById('loginForm');
 
-  if (error) alert(error.message);
-  else window.location.href = 'dashboard.html';
-}
-    </script>
+        if (loginForm) {
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+
+                // 3. Use the initialized client here
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                    email: email,
+                    password: password,
+                });
+
+                if (error) {
+                    alert("Login Error: " + error.message);
+                } else {
+                    window.location.href = 'dashboard.html';
+                }
+            });
+        }
+    })();
+</script>
 
 </body>
 </html>
