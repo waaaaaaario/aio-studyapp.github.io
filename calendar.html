@@ -3,175 +3,266 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Study Calendar - Dynamic</title>
+    <title>Study App - Dynamic Calendar</title>
     <style>
+        :root {
+            --primary-yellow: #ffde59;
+            --hover-yellow: #fbd01e;
+            --bg-gray: #f8f9fa;
+            --text-dark: #1a1a1b;
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f7f6; padding: 20px; text-align: center; }
         
-        .back-link { display: inline-block; margin-bottom: 20px; color: #555; text-decoration: none; font-weight: bold; }
-        
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: var(--bg-gray); 
+            padding: 20px; 
+            color: var(--text-dark);
+        }
+
+        .back-link { 
+            display: inline-block; 
+            margin-bottom: 20px; 
+            color: #666; 
+            text-decoration: none; 
+            font-weight: 600;
+        }
+
         .calendar-container {
-            max-width: 900px;
+            max-width: 1000px;
             margin: 0 auto;
             background: white;
             padding: 30px;
             border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.05);
         }
 
-        /* View & Navigation Controls */
-        .controls {
+        /* Controls Section */
+        .header-controls {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 25px;
+            margin-bottom: 30px;
             flex-wrap: wrap;
             gap: 15px;
         }
 
         .view-switcher button, .nav-buttons button {
-            padding: 8px 16px;
+            padding: 10px 20px;
             border: 1px solid #ddd;
             background: white;
             cursor: pointer;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: 0.2s;
+            border-radius: 12px;
+            font-weight: 700;
+            transition: 0.3s;
         }
 
-        .view-switcher button.active { background: #ffde59; border-color: #ffde59; }
-        .nav-buttons button:hover { background: #eee; }
+        .view-switcher button.active {
+            background: var(--primary-yellow);
+            border-color: var(--primary-yellow);
+        }
 
-        #monthDisplay { font-size: 1.5rem; font-weight: 800; min-width: 200px; }
+        #monthDisplay { font-size: 1.8rem; font-weight: 900; }
 
-        /* Grid Setup */
+        /* Grid Layouts */
         .calendar-grid {
             display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 10px;
+            gap: 12px;
+            transition: all 0.3s ease;
         }
 
-        .day-header { font-weight: bold; color: #999; text-transform: uppercase; font-size: 0.8rem; padding-bottom: 10px; }
+        /* Month View Specifics */
+        .grid-month { grid-template-columns: repeat(7, 1fr); }
         
-        .day {
-            aspect-ratio: 1/1;
+        /* Week View Specifics */
+        .grid-week { grid-template-columns: repeat(7, 1fr); }
+
+        /* Day View Specifics */
+        .grid-day { grid-template-columns: 1fr; }
+
+        .day-header { 
+            font-weight: bold; 
+            color: #aaa; 
+            text-transform: uppercase; 
+            font-size: 0.75rem; 
+            text-align: center;
+        }
+        
+        .day-box {
+            min-height: 120px;
             border: 1px solid #f0f0f0;
-            border-radius: 10px;
+            border-radius: 15px;
+            padding: 10px;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.1rem;
-            color: #444;
             transition: 0.2s;
         }
 
-        .day:hover { background-color: #fffde7; border-color: #ffde59; cursor: pointer; }
-        .padding-day { background-color: #fafafa; color: #ccc; border: none; }
-        .today { background-color: #ffde59; font-weight: bold; border-color: #ffde59; }
+        .day-box:hover { background-color: #fffef0; border-color: var(--primary-yellow); }
+        
+        .today { 
+            background-color: var(--primary-yellow) !important; 
+            border-color: var(--primary-yellow);
+        }
 
-        /* Responsive */
-        @media (max-width: 600px) {
-            .controls { justify-content: center; }
-            #monthDisplay { width: 100%; order: -1; }
+        .padding-day { background-color: #fafafa; opacity: 0.3; }
+
+        /* Task Input Area for Day/Week View */
+        .task-input {
+            width: 100%;
+            border: none;
+            background: transparent;
+            font-family: inherit;
+            resize: none;
+            outline: none;
+            margin-top: 5px;
+            font-size: 0.9rem;
+            color: #444;
+        }
+
+        .day-title { font-weight: 800; font-size: 1.1rem; margin-bottom: 5px; }
+
+        @media (max-width: 768px) {
+            .grid-week { grid-template-columns: 1fr; }
+            #monthDisplay { font-size: 1.4rem; order: -1; width: 100%; text-align: center; }
         }
     </style>
 </head>
 <body>
 
-    <a href="index.html" class="back-link">← Back to Dashboard</a>
+    <a href="index.html" class="back-link">← Return Home</a>
     
     <div class="calendar-container">
-        <div class="controls">
+        <div class="header-controls">
             <div class="view-switcher">
-                <button onclick="changeView('day')">Day</button>
-                <button onclick="changeView('week')">Week</button>
-                <button class="active" onclick="changeView('month')">Month</button>
+                <button id="dayBtn" onclick="changeView('day')">Day</button>
+                <button id="weekBtn" onclick="changeView('week')">Week</button>
+                <button id="monthBtn" class="active" onclick="changeView('month')">Month</button>
             </div>
 
             <div id="monthDisplay"></div>
 
             <div class="nav-buttons">
-                <button onclick="moveMonth(-1)">Prev</button>
-                <button onclick="moveMonth(1)">Next</button>
+                <button onclick="moveTime(-1)">Prev</button>
+                <button onclick="moveTime(1)">Next</button>
             </div>
         </div>
 
-        <div id="calendarGrid" class="calendar-grid">
+        <div id="calendarGrid" class="calendar-grid grid-month">
             </div>
     </div>
 
     <script>
-        let nav = 0; // Tracks which month we are looking at (0 = current)
+        let nav = 0; // Displacement from current date
+        let view = 'month'; // 'day', 'week', 'month'
         const calendarGrid = document.getElementById('calendarGrid');
         const monthDisplay = document.getElementById('monthDisplay');
 
-        function loadCalendar() {
+        function init() {
+            render();
+        }
+
+        function render() {
             const dt = new Date();
             if (nav !== 0) {
-                dt.setMonth(new Date().getMonth() + nav);
+                if (view === 'month') dt.setMonth(new Date().getMonth() + nav);
+                else if (view === 'week') dt.setDate(new Date().getDate() + (nav * 7));
+                else dt.setDate(new Date().getDate() + nav);
             }
 
-            const day = dt.getDate();
-            const month = dt.getMonth();
-            const year = dt.getFullYear();
-
-            const firstDayOfMonth = new Date(year, month, 1);
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-            
-            const dateString = firstDayOfMonth.toLocaleDateString('en-us', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-            });
-
-            const padDays = firstDayOfMonth.getDay();
-
-            monthDisplay.innerText = `${dt.toLocaleDateString('en-us', { month: 'long' })} ${year}`;
             calendarGrid.innerHTML = '';
+            calendarGrid.className = 'calendar-grid'; // Reset
 
-            // Add Headers
-            const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-            weekDays.forEach(d => {
-                const daySq = document.createElement('div');
-                daySq.classList.add('day-header');
-                daySq.innerText = d;
-                calendarGrid.appendChild(daySq);
+            if (view === 'month') renderMonthView(dt);
+            else if (view === 'week') renderWeekView(dt);
+            else renderDayView(dt);
+        }
+
+        function renderMonthView(dt) {
+            calendarGrid.classList.add('grid-month');
+            const year = dt.getFullYear();
+            const month = dt.getMonth();
+            monthDisplay.innerText = dt.toLocaleDateString('en-us', { month: 'long', year: 'numeric' });
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].forEach(d => {
+                const h = document.createElement('div');
+                h.className = 'day-header';
+                h.innerText = d;
+                calendarGrid.appendChild(h);
             });
 
-            // Add Padding Days (empty days from previous month)
-            for(let i = 1; i <= padDays; i++) {
-                const daySq = document.createElement('div');
-                daySq.classList.add('day', 'padding-day');
-                calendarGrid.appendChild(daySq);
+            for(let i = 0; i < firstDay; i++) {
+                const p = document.createElement('div');
+                p.className = 'day-box padding-day';
+                calendarGrid.appendChild(p);
             }
 
-            // Add Actual Days
             for(let i = 1; i <= daysInMonth; i++) {
-                const daySq = document.createElement('div');
-                daySq.classList.add('day');
-                daySq.innerText = i;
-
-                if (i === new Date().getDate() && nav === 0) {
-                    daySq.classList.add('today');
-                }
-
-                calendarGrid.appendChild(daySq);
+                const d = document.createElement('div');
+                d.className = 'day-box';
+                if (i === new Date().getDate() && nav === 0) d.classList.add('today');
+                d.innerHTML = `<div class="day-title">${i}</div>`;
+                calendarGrid.appendChild(d);
             }
         }
 
-        function moveMonth(dir) {
+        function renderWeekView(dt) {
+            calendarGrid.classList.add('grid-week');
+            const startOfWeek = new Date(dt);
+            startOfWeek.setDate(dt.getDate() - dt.getDay());
+            
+            monthDisplay.innerText = "Week of " + startOfWeek.toLocaleDateString('en-us', { month: 'short', day: 'numeric' });
+
+            for(let i = 0; i < 7; i++) {
+                const day = new Date(startOfWeek);
+                day.setDate(startOfWeek.getDate() + i);
+                createTaskBox(day);
+            }
+        }
+
+        function renderDayView(dt) {
+            calendarGrid.classList.add('grid-day');
+            monthDisplay.innerText = dt.toLocaleDateString('en-us', { weekday: 'long', month: 'long', day: 'numeric' });
+            createTaskBox(dt, true);
+        }
+
+        function createTaskBox(date, isFullDay = false) {
+            const key = `task-${date.toDateString()}`;
+            const savedTask = localStorage.getItem(key) || "";
+
+            const box = document.createElement('div');
+            box.className = 'day-box';
+            if (isFullDay) box.style.minHeight = '400px';
+
+            box.innerHTML = `
+                <div class="day-title">${date.toLocaleDateString('en-us', { weekday: 'short', day: 'numeric' })}</div>
+                <textarea class="task-input" placeholder="Type study goals..." oninput="saveTask('${key}', this.value)">${savedTask}</textarea>
+            `;
+            calendarGrid.appendChild(box);
+        }
+
+        function saveTask(key, value) {
+            localStorage.setItem(key, value);
+        }
+
+        function moveTime(dir) {
             nav += dir;
-            loadCalendar();
+            render();
         }
 
-        function changeView(view) {
-            alert("Switching to " + view + " view! (This would trigger a different layout in a full app)");
-            // Note: For a real app, this would swap the grid for a single-day or 7-day view.
+        function changeView(newView) {
+            view = newView;
+            nav = 0; // Reset navigation when switching views
+            document.querySelectorAll('.view-switcher button').forEach(b => b.classList.remove('active'));
+            document.getElementById(newView + 'Btn').classList.add('active');
+            render();
         }
 
-        loadCalendar();
+        init();
     </script>
 </body>
 </html>
