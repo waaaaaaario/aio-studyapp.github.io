@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - StudyApp</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f7f6; }
+
+        /* Sidebar Navigation */
+        .layout { display: flex; height: 100vh; }
+        
+        .sidebar {
+            width: 250px;
+            background: #6a11cb;
+            color: white;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar h2 { margin-bottom: 40px; font-size: 1.5rem; }
+        .sidebar a { 
+            color: rgba(255,255,255,0.8); 
+            text-decoration: none; 
+            margin-bottom: 20px; 
+            font-weight: 600; 
+        }
+        .sidebar a:hover { color: white; }
+
+        /* Main Content Area */
+        .main-content { flex: 1; padding: 40px; overflow-y: auto; }
+        
+        .welcome-banner {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            border-bottom: 4px solid #ffde59;
+        }
+
+        .logout-btn {
+            margin-top: auto;
+            color: #ffb3b3 !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="layout">
+        <nav class="sidebar">
+            <h2>StudyApp</h2>
+            <a href="#">🏠 Dashboard</a>
+            <a href="calendar.html">📅 Calendar</a>
+            <a href="#">📝 My Notes</a>
+            <a href="#">⚙️ Settings</a>
+            <a href="index.html" class="logout-btn">🚪 Log Out</a>
+        </nav>
+
+        <main class="main-content">
+            <div class="welcome-banner">
+                <h1>Welcome back, Scholar!</h1>
+                <p>You have 3 tasks remaining for today.</p>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Study Time</h3>
+                    <p>12.5 Hours</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Tasks Done</h3>
+                    <p>85%</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Streak</h3>
+                    <p>5 Days</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+</body>
+</html>
