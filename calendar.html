@@ -62,7 +62,7 @@
             border-color: var(--primary-yellow);
         }
 
-        #monthDisplay { font-size: 1.8rem; font-weight: 900; }
+        #monthDisplay { font-size: 1.6rem; font-weight: 900; }
 
         .calendar-grid {
             display: grid;
@@ -93,7 +93,6 @@
             text-align: center;
         }
 
-        /* Today Highlight (Works in all views) */
         .today { 
             background-color: var(--primary-yellow) !important; 
             border-color: var(--primary-yellow) !important;
@@ -107,7 +106,7 @@
 
         @media (max-width: 768px) {
             .grid-week { grid-template-columns: 1fr; }
-            #monthDisplay { font-size: 1.4rem; width: 100%; text-align: center; }
+            #monthDisplay { font-size: 1.2rem; width: 100%; text-align: center; }
         }
     </style>
 </head>
@@ -142,7 +141,6 @@
 
         function render() {
             const dt = new Date();
-            // Adjust date based on navigation
             if (nav !== 0) {
                 if (view === 'month') dt.setMonth(new Date().getMonth() + nav);
                 else if (view === 'week') dt.setDate(new Date().getDate() + (nav * 7));
@@ -198,10 +196,17 @@
 
         function renderWeekView(dt) {
             calendarGrid.classList.add('grid-week');
+            
+            // Calculate start and end of week
             const startOfWeek = new Date(dt);
             startOfWeek.setDate(dt.getDate() - dt.getDay());
+            const endOfWeek = new Date(startOfWeek);
+            endOfWeek.setDate(startOfWeek.getDate() + 6);
             
-            monthDisplay.innerText = "Week View";
+            // Dynamic Heading: "Month Day – Month Day, Year"
+            const startStr = startOfWeek.toLocaleDateString('en-us', { month: 'short', day: 'numeric' });
+            const endStr = endOfWeek.toLocaleDateString('en-us', { month: 'short', day: 'numeric', year: 'numeric' });
+            monthDisplay.innerText = `${startStr} – ${endStr}`;
 
             for(let i = 0; i < 7; i++) {
                 const day = new Date(startOfWeek);
@@ -221,14 +226,17 @@
 
         function renderDayView(dt) {
             calendarGrid.classList.add('grid-day');
-            monthDisplay.innerText = dt.toLocaleDateString('en-us', { weekday: 'long', month: 'long', day: 'numeric' });
+            monthDisplay.innerText = dt.toLocaleDateString('en-us', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
             
             const box = document.createElement('div');
             box.className = 'day-box';
             box.style.minHeight = '300px';
             if (isToday(dt)) box.classList.add('today');
             
-            box.innerHTML = `<div class="day-title" style="font-size: 3rem;">${dt.getDate()}</div>`;
+            box.innerHTML = `
+                <div class="day-subtitle">${dt.toLocaleDateString('en-us', { weekday: 'long' })}</div>
+                <div class="day-title" style="font-size: 4rem;">${dt.getDate()}</div>
+            `;
             calendarGrid.appendChild(box);
         }
 
