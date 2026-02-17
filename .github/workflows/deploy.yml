@@ -2,7 +2,7 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - main
+      - main  # Check if your branch is 'main' or 'master'
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -12,11 +12,17 @@ jobs:
 
       - name: Inject Supabase Secrets
         run: |
-          sed -i "s|SEARCH_REPLACE_SUPABASE_URL|${{ secrets.SUPABASE_URL }}|g" login.html signup.html
-          sed -i "s|SEARCH_REPLACE_SUPABASE_KEY|${{ secrets.SUPABASE_KEY }}|g" login.html signup.html
+          # We use | as a delimiter in sed because URLs contain / which breaks normal sed
+          sed -i "s|SEARCH_REPLACE_SUPABASE_URL|${{ secrets.SUPABASE_URL }}|g" signup.html
+          sed -i "s|SEARCH_REPLACE_SUPABASE_KEY|${{ secrets.SUPABASE_KEY }}|g" signup.html
+          # Do the same for login.html if you have it ready
+          if [ -f login.html ]; then
+            sed -i "s|SEARCH_REPLACE_SUPABASE_URL|${{ secrets.SUPABASE_URL }}|g" login.html
+            sed -i "s|SEARCH_REPLACE_SUPABASE_KEY|${{ secrets.SUPABASE_KEY }}|g" login.html
+          fi
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          folder: . # Deploys the current folder
-          branch: gh-pages # This creates a clean branch for your live site
+          folder: . 
+          branch: gh-pages
