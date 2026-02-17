@@ -127,51 +127,58 @@
     </div>
 
     <script>
-        // 2. Initialize Supabase Client with Secrets Placeholders
-        const supabaseUrl = 'https://hpmbbjcybnzojgsepmdn.supabase.co';
-        const supabaseKey = 'sb_publishable_HAX3ykxTnI81SHifNIyUwA_-BomdZrH';
-        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+        // Wrap everything in a function to prevent "already declared" errors
+        (function() {
+            const supabaseUrl = 'https://hpmbbjcybnzojgsepmdn.supabase.co';
+            const supabaseKey = 'sb_publishable_HAX3ykxTnI81SHifNIyUwA_-BomdZrH';
+            
+            // Check if injection happened (for debugging)
+            if (supabaseUrl === 'https://hpmbbjcybnzojgsepmdn.supabase.co') {
+                console.error("Secrets not injected. Check GitHub Actions!");
+            }
 
-        const signupForm = document.getElementById('signupForm');
-        const submitBtn = document.getElementById('submitBtn');
+            const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-        signupForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
+            const signupForm = document.getElementById('signupForm');
+            const submitBtn = document.getElementById('submitBtn');
 
-            // Visual feedback
-            submitBtn.innerText = "Creating Account...";
-            submitBtn.disabled = true;
+            signupForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
 
-            const fullName = document.getElementById('fullName').value;
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+                submitBtn.innerText = "Creating Account...";
+                submitBtn.disabled = true;
 
-            // 3. Supabase Sign Up Logic
-            const { data, error } = await supabase.auth.signUp({
-                email: email,
-                password: password,
-                options: {
-                    data: {
-                        full_name: fullName // This stores the name in User Metadata
+                const fullName = document.getElementById('fullName').value;
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+
+                try {
+                    const { data, error } = await supabaseClient.auth.signUp({
+                        email: email,
+                        password: password,
+                        options: {
+                            data: {
+                                full_name: fullName 
+                            }
+                        }
+                    });
+
+                    if (error) {
+                        alert("Error: " + error.message);
+                        submitBtn.innerText = "Create Account";
+                        submitBtn.disabled = false;
+                    } else {
+                        console.log("Registered user:", data.user);
+                        localStorage.setItem('loggedInUser', email);
+                        window.location.href = 'dashboard.html';
                     }
+                } catch (err) {
+                    console.error("Unexpected error:", err);
+                    submitBtn.innerText = "Create Account";
+                    submitBtn.disabled = false;
                 }
             });
-
-            if (error) {
-                alert("Error: " + error.message);
-                submitBtn.innerText = "Create Account";
-                submitBtn.disabled = false;
-            } else {
-                // Success! Supabase automatically logs user in unless email confirmation is on
-                console.log("Registered user:", data.user);
-                
-                // Keep your original localStorage logic if dashboard depends on it
-                localStorage.setItem('loggedInUser', email);
-                
-                // Redirect
-                window.location.href = 'dashboard.html';
-            }
-        });
+        })();
     </script>
 
 </body>
