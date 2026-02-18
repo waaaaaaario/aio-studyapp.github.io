@@ -25,8 +25,8 @@ jobs:
             sed -i "s|SEARCH_REPLACE_SUPABASE_KEY|${{ secrets.SUPABASE_KEY }}|g" login.html
           fi
           if [ -f dashboard.html ]; then
-            sed -i "s|SEARCH_REPLACE_SUPABASE_URL|${{ secrets.SUPABASE_URL }}|g" dashboard.html
-            sed -i "s|SEARCH_REPLACE_SUPABASE_KEY|${{ secrets.SUPABASE_KEY }}|g" dashboard.html
+            sed -i "s|let supabaseUrl =.*|const supabaseUrl = '${{ secrets.SUPABASE_URL }}';|g" dashboard.html
+            sed -i "s|let supabaseKey =.*|const supabaseKey = '${{ secrets.SUPABASE_KEY }}';|g" dashboard.html
           fi
 
       - name: Deploy to GitHub Pages
