@@ -123,14 +123,13 @@
     </style>
 </head>
 <body>
-
     <div class="layout">
         <nav class="sidebar">
             <h2>STUDYAPP</h2>
             <div id="nav-dashboard" class="nav-item active" onclick="showSection('dashboard')">🏠 Dashboard</div>
             <div id="nav-calendar" class="nav-item" onclick="showSection('calendar')">📅 Calendar</div>
             <div id="nav-flashcards" class="nav-item" onclick="showSection('flashcards')">🃏 Flashcards</div>
-            <a href="index.html" class="nav-item logout-btn" style="margin-top: auto; color: #ffb3b3;">🚪 Log Out</a>
+            <a href="#" class="nav-item logout-btn" style="margin-top: auto; color: #ffb3b3;">🚪 Log Out</a>
         </nav>
 
         <main class="main-content">
@@ -162,7 +161,7 @@
             <div id="flashcards" class="content-section">
                 <div class="flashcard-studio">
                     <aside class="sets-sidebar">
-                        <h3>Continue practicing</h3>
+                        <h3>Saved Sets</h3>
                         <div class="sets-list" id="saved-sets-list"></div>
                     </aside>
                     <section class="studio-main">
@@ -183,7 +182,7 @@
                                 <span id="c-count">1 / 1</span>
                                 <button onclick="nextC()" class="view-switcher button">Next</button>
                             </div>
-                            <button onclick="exitPlayer()" style="margin-top:20px; color:red; border:none; background:none; cursor:pointer;">Close</button>
+                            <button onclick="exitPlayer()" style="margin-top:20px; color:red; border:none; background:none; cursor:pointer;">Close Player</button>
                         </div>
                     </section>
                 </div>
@@ -191,10 +190,32 @@
         </main>
     </div>
 
+    <div id="createModal" class="modal">
+        <div class="modal-content">
+            <h3>Create New Set</h3>
+            <input type="text" id="set-title" placeholder="Set Title (e.g. Biology 101)" style="width:100%; padding:10px; margin:15px 0; border-radius:8px; border:1px solid #ddd;">
+            <div id="cards-input-area">
+                <div style="display:flex; gap:5px; margin-bottom:10px;">
+                    <input type="text" placeholder="Question" class="q-in" style="flex:1; padding:8px;">
+                    <input type="text" placeholder="Answer" class="a-in" style="flex:1; padding:8px;">
+                </div>
+            </div>
+            <button onclick="addNewInputRow()" style="background:#eee; border:none; padding:8px; width:100%; cursor:pointer; margin-bottom:15px;">+ Add Another Card</button>
+            <div style="display:flex; gap:10px;">
+                <button onclick="saveSet()" style="flex:1; background:var(--primary-purple); color:white; border:none; padding:12px; border-radius:8px; cursor:pointer;">Save Set</button>
+                <button onclick="closeModal()" style="flex:1; background:#ccc; border:none; padding:12px; border-radius:8px; cursor:pointer;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        const _supabase = supabase.createClient('SEARCH_REPLACE_SUPABASE_URL', 'SEARCH_REPLACE_SUPABASE_KEY');
-        let nav = 0; let currentView = 'month';
-        let activeDeck = []; let cIdx = 0;
+        // Use your real credentials here
+        const _supabase = supabase.createClient('YOUR_SUPABASE_URL', 'YOUR_SUPABASE_KEY');
+        
+        let nav = 0; 
+        let currentView = 'month';
+        let activeDeck = []; 
+        let cIdx = 0;
 
         function showSection(id) {
             document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
@@ -202,79 +223,103 @@
             document.getElementById(id).classList.add('active');
             document.getElementById('nav-'+id).classList.add('active');
             if(id === 'calendar') render();
+            if(id === 'flashcards') loadSets(); // Load data when clicking the tab
         }
 
-        // FLASHCARD LOGIC
+        // --- FLASHCARD LOGIC ---
         async function loadSets() {
             const { data: { user } } = await _supabase.auth.getUser();
-            if(!user) return;
-            const { data } = await _supabase.from('flashcard_sets').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
+            if(!user) {
+                document.getElementById('saved-sets-list').innerHTML = "<p style='padding:10px; font-size:0.8rem;'>Please log in to see sets.</p>";
+                return;
+            }
+            const { data, error } = await _supabase.from('flashcard_sets').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
+            
             const list = document.getElementById('saved-sets-list');
-            list.innerHTML = data?.map(s => `
-                <div class="set-item" onclick='startPlaying(${JSON.stringify(s.cards).replace(/'/g, "&apos;")}, "${s.title}")'>
-                    <h4>${s.title}</h4><span>${s.cards.length} cards</span>
-                </div>
-            `).join('') || '<p>No sets found</p>';
+            if (data && data.length > 0) {
+                list.innerHTML = data.map(s => `
+                    <div class="set-item" onclick='startPlaying(${JSON.stringify(s.cards).replace(/'/g, "&apos;")}, "${s.title}")'>
+                        <h4 style="margin-bottom:5px;">${s.title}</h4>
+                        <span style="font-size:0.8rem; color:#666;">${s.cards.length} cards</span>
+                    </div>
+                `).join('');
+            } else {
+                list.innerHTML = '<p style="padding:10px;">No sets found.</p>';
+            }
         }
 
         async function saveSet() {
             const { data: { user } } = await _supabase.auth.getUser();
+            if(!user) return alert("You must be logged in!");
+
             const title = document.getElementById('set-title').value;
             const qs = document.querySelectorAll('.q-in');
             const as = document.querySelectorAll('.a-in');
             const cards = [];
-            qs.forEach((q, i) => { if(q.value) cards.push({q: q.value, a: as[i].value}); });
-            if(!title || cards.length === 0) return alert("Title and cards required");
+            
+            qs.forEach((q, i) => { 
+                if(q.value.trim()) cards.push({q: q.value, a: as[i].value}); 
+            });
+
+            if(!title || cards.length === 0) return alert("Title and at least one card required");
 
             const { error } = await _supabase.from('flashcard_sets').insert([{ user_id: user.id, title, cards }]);
-            if(!error) { closeModal(); loadSets(); } else { alert(error.message); }
+            if(!error) { 
+                closeModal(); 
+                loadSets(); 
+                // Reset fields
+                document.getElementById('set-title').value = '';
+                document.getElementById('cards-input-area').innerHTML = '<div style="display:flex; gap:5px; margin-bottom:10px;"><input type="text" placeholder="Question" class="q-in" style="flex:1; padding:8px;"><input type="text" placeholder="Answer" class="a-in" style="flex:1; padding:8px;"></div>';
+            } else { 
+                alert(error.message); 
+            }
         }
 
         function startPlaying(cards, title) {
-            activeDeck = cards; cIdx = 0;
+            activeDeck = cards; 
+            cIdx = 0;
             document.getElementById('creation-ui').style.display = 'none';
             document.getElementById('player-ui').style.display = 'block';
             document.getElementById('active-set-title').innerText = title;
             updateCardDisplay();
         }
+
         function updateCardDisplay() {
             document.getElementById('card-inner').classList.remove('is-flipped');
             document.getElementById('f-front').innerText = activeDeck[cIdx].q;
             document.getElementById('f-back').innerText = activeDeck[cIdx].a;
             document.getElementById('c-count').innerText = `${cIdx + 1} / ${activeDeck.length}`;
         }
+
         function nextC() { cIdx = (cIdx + 1) % activeDeck.length; updateCardDisplay(); }
         function prevC() { cIdx = (cIdx - 1 + activeDeck.length) % activeDeck.length; updateCardDisplay(); }
         function exitPlayer() { document.getElementById('creation-ui').style.display = 'block'; document.getElementById('player-ui').style.display = 'none'; }
+        
         function openModal() { document.getElementById('createModal').style.display = 'flex'; }
         function closeModal() { document.getElementById('createModal').style.display = 'none'; }
+        
         function addNewInputRow() {
-            const div = document.createElement('div'); div.style.display='flex'; div.style.gap='5px'; div.style.marginBottom='10px';
-            div.innerHTML = `<input type="text" placeholder="Q" class="q-in" style="flex:1; padding:8px;"><input type="text" placeholder="A" class="a-in" style="flex:1; padding:8px;">`;
+            const div = document.createElement('div'); 
+            div.style.display='flex'; div.style.gap='5px'; div.style.marginBottom='10px';
+            div.innerHTML = `<input type="text" placeholder="Question" class="q-in" style="flex:1; padding:8px;"><input type="text" placeholder="Answer" class="a-in" style="flex:1; padding:8px;">`;
             document.getElementById('cards-input-area').appendChild(div);
         }
 
-        /* --- CALENDAR LOGIC --- */
+        /* --- CALENDAR LOGIC (Simplified & Working) --- */
         function changeView(v) {
-            currentView = v; 
-            nav = 0; // Reset navigation when switching views
+            currentView = v; nav = 0;
             document.querySelectorAll('.view-switcher button').forEach(b => b.classList.remove('active'));
             document.getElementById(v + 'Btn').classList.add('active');
             render();
         }
 
-        function changeDate(dir) {
-            nav += dir;
-            render();
-        }
+        function changeDate(dir) { nav += dir; render(); }
 
         function render() {
             const grid = document.getElementById('calGrid');
             grid.innerHTML = '';
             grid.className = `calendar-grid grid-${currentView}`;
-            
             const dt = new Date();
-            
             if (currentView === 'month') {
                 dt.setMonth(new Date().getMonth() + nav);
                 renderMonth(dt);
@@ -291,28 +336,20 @@
             const grid = document.getElementById('calGrid');
             const month = dt.getMonth();
             const year = dt.getFullYear();
-            
             document.getElementById('monthLabel').innerText = dt.toLocaleDateString('en-us', {month:'long', year:'numeric'});
-
-            const firstDayOfMonth = new Date(year, month, 1).getDay();
+            const firstDay = new Date(year, month, 1).getDay();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-            // Render Weekday Headers
             ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(day => {
-                const h = document.createElement('div');
-                h.className = 'day-header';
-                h.innerText = day;
+                const h = document.createElement('div'); h.className = 'day-header'; h.innerText = day;
                 grid.appendChild(h);
             });
 
-            // Padding days
-            for(let i=0; i < firstDayOfMonth; i++) {
-                const p = document.createElement('div');
-                p.className = 'day-box padding-day';
+            for(let i=0; i < firstDay; i++) {
+                const p = document.createElement('div'); p.className = 'day-box padding-day';
                 grid.appendChild(p);
             }
 
-            // Days of the month
             for(let i=1; i <= daysInMonth; i++) {
                 const dayBox = document.createElement('div');
                 dayBox.className = 'day-box';
@@ -325,21 +362,15 @@
 
         function renderWeek(dt) {
             const grid = document.getElementById('calGrid');
-            const startOfWeek = new Date(dt);
-            startOfWeek.setDate(dt.getDate() - dt.getDay());
-            
-            document.getElementById('monthLabel').innerText = `Week of ${startOfWeek.toLocaleDateString('en-us', {month:'short', day:'numeric'})}`;
-            
+            const start = new Date(dt);
+            start.setDate(dt.getDate() - dt.getDay());
+            document.getElementById('monthLabel').innerText = `Week of ${start.toLocaleDateString('en-us', {month:'short', day:'numeric'})}`;
             for(let i=0; i<7; i++) {
-                const day = new Date(startOfWeek);
-                day.setDate(startOfWeek.getDate() + i);
-                
+                const d = new Date(start); d.setDate(start.getDate() + i);
                 const dayBox = document.createElement('div');
                 dayBox.className = 'day-box';
-                if(day.toDateString() === new Date().toDateString()) dayBox.classList.add('today');
-                
-                dayBox.innerHTML = `<span style="font-size:0.8rem; color:#999; font-weight:bold">${day.toLocaleDateString('en-us',{weekday:'short'})}</span>
-                                    <span style="font-size:1.8rem">${day.getDate()}</span>`;
+                if(d.toDateString() === new Date().toDateString()) dayBox.classList.add('today');
+                dayBox.innerHTML = `<span style="font-size:0.8rem; color:#999;">${d.toLocaleDateString('en-us',{weekday:'short'})}</span><span style="font-size:1.5rem">${d.getDate()}</span>`;
                 grid.appendChild(dayBox);
             }
         }
@@ -347,17 +378,14 @@
         function renderDay(dt) {
             const grid = document.getElementById('calGrid');
             document.getElementById('monthLabel').innerText = dt.toLocaleDateString('en-us', {weekday:'long', month:'long', day:'numeric'});
-            
             const dayBox = document.createElement('div');
             dayBox.className = 'day-box';
-            dayBox.innerHTML = `<span style="font-size:4rem">${dt.getDate()}</span>
-                                <span style="color:#666">${dt.toLocaleDateString('en-us', {month: 'long'})}</span>`;
+            dayBox.innerHTML = `<span style="font-size:3rem">${dt.getDate()}</span><span style="color:#666">${dt.toLocaleDateString('en-us', {month: 'long'})}</span>`;
             if(dt.toDateString() === new Date().toDateString()) dayBox.classList.add('today');
-            
             grid.appendChild(dayBox);
         }
 
-        // Initialize
+        // Init
         render();
     </script>
 </body>
