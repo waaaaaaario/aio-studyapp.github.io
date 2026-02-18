@@ -24,6 +24,8 @@ jobs:
             sed -i "s|SEARCH_REPLACE_SUPABASE_URL|${{ secrets.SUPABASE_URL }}|g" login.html
             sed -i "s|SEARCH_REPLACE_SUPABASE_KEY|${{ secrets.SUPABASE_KEY }}|g" login.html
           fi
+          sed -i "s|REPLACE_WITH_URL|${{ secrets.SUPABASE_URL }}|g" dashboard.html
+          sed -i "s|REPLACE_WITH_KEY|${{ secrets.SUPABASE_KEY }}|g" dashboard.html
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
