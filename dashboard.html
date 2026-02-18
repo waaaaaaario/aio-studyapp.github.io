@@ -36,7 +36,7 @@
         .content-section.active { display: flex; flex-direction: column; }
 
         /* Flashcard Studio Layout */
-        .flashcard-studio { display: flex; height: 100%; gap: 20px; }
+        .flashcard-studio { display: flex; height: 100%; gap: 20px; overflow: hidden; }
         .sets-sidebar {
             width: 280px; background: white; border-radius: 20px; padding: 20px;
             display: flex; flex-direction: column; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
@@ -53,83 +53,50 @@
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             box-shadow: 0 4px 15px rgba(0,0,0,0.05);
         }
-        .plus-btn {
-            width: 70px; height: 70px; border-radius: 50%; border: 3px dashed #ccc;
-            background: none; font-size: 2rem; color: #ccc; cursor: pointer; margin-top: 20px;
-        }
 
-        /* 3D Flashcard Player */
-        .card-scene { width: 450px; height: 280px; perspective: 1000px; cursor: pointer; margin-bottom: 20px; }
-        .card-inner { width: 100%; height: 100%; position: relative; transition: transform 0.6s; transform-style: preserve-3d; }
-        .card-inner.is-flipped { transform: rotateY(180deg); }
-        .card-face {
-            position: absolute; width: 100%; height: 100%; backface-visibility: hidden;
-            display: flex; align-items: center; justify-content: center; padding: 30px;
-            text-align: center; font-size: 1.4rem; font-weight: 600; border-radius: 20px;
-            background: white; border: 2px solid #f0f0f0;
+        /* Calendar Card */
+        .calendar-card {
+            background: white; padding: 25px; border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); height: 100%;
+            display: flex; flex-direction: column;
         }
-        .card-face-back { background: var(--accent-yellow); transform: rotateY(180deg); }
+        .cal-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px; flex-shrink: 0;
+        }
+        .view-switcher button, .nav-btns button {
+            padding: 8px 15px; border: 1px solid #ddd; background: white;
+            cursor: pointer; border-radius: 6px; font-weight: 600;
+        }
+        .view-switcher button.active { background: var(--accent-yellow); border-color: var(--accent-yellow); }
 
-            /* Update these specific parts in your <style> tag */
         .calendar-grid { 
             display: grid; 
             gap: 10px; 
-            flex: 1; /* This makes it fill the available space */
+            flex-grow: 1; 
             width: 100%;
-            min-height: 0; 
         }
-
-        /* Precise grid definitions */
-        .grid-month { 
-            grid-template-columns: repeat(7, 1fr); 
-            grid-template-rows: 30px repeat(5, 1fr); 
-        }
-        .grid-week { 
-            grid-template-columns: repeat(7, 1fr); 
-            grid-template-rows: 1fr; 
-        }
-        .grid-day { 
-            grid-template-columns: 1fr; 
-            grid-template-rows: 1fr; 
-        }
+        
+        /* Grid states handled via JS class switching */
+        .grid-month { grid-template-columns: repeat(7, 1fr); grid-template-rows: 30px repeat(6, 1fr); }
+        .grid-week { grid-template-columns: repeat(7, 1fr); grid-template-rows: 1fr; }
+        .grid-day { grid-template-columns: 1fr; grid-template-rows: 1fr; }
 
         .day-box {
             border: 1px solid #f0f0f0;
-            border-radius: 12px;
+            border-radius: 8px;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
+            align-items: center;      /* Keeps text centered horizontally */
+            justify-content: flex-start; /* Pushes content to the TOP instead of center */
+            font-size: 1rem;
             background: #fff;
-            padding: 10px 5px;
-            transition: transform 0.2s;
+            padding: 10px 5px 5px 5px; /* Added more padding to the TOP (10px) */
+            height: 100%;             /* Ensures the box fills the grid cell */
         }
-        
-        .day-box:hover {
-            background: #fafafa;
-        }
-
-        .today { 
-            background: #fff9e6; 
-            border: 2px solid var(--accent-yellow); 
-            color: #333; 
-            font-weight: bold; 
-        }
-
-        .padding-day { 
-            opacity: 0.3; 
-            background: #fdfdfd; 
-        }
-
-        .day-header { 
-            font-weight: bold; 
-            color: #bbb; 
-            font-size: 0.75rem; 
-            text-transform: uppercase; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-        }
+        .day-header { font-weight: bold; color: #999; font-size: 0.85rem; text-transform: uppercase; display: flex; align-items: center; justify-content: center; }
+        .today { background: #fff9e6; border: 2px solid var(--accent-yellow); color: #333; font-weight: bold; }
+        .padding-day { opacity: 0.3; background: #fafafa; }
         
         /* Modal Styles */
         .modal {
@@ -140,13 +107,14 @@
     </style>
 </head>
 <body>
+
     <div class="layout">
         <nav class="sidebar">
             <h2>STUDYAPP</h2>
             <div id="nav-dashboard" class="nav-item active" onclick="showSection('dashboard')">🏠 Dashboard</div>
             <div id="nav-calendar" class="nav-item" onclick="showSection('calendar')">📅 Calendar</div>
             <div id="nav-flashcards" class="nav-item" onclick="showSection('flashcards')">🃏 Flashcards</div>
-            <a href="#" class="nav-item logout-btn" style="margin-top: auto; color: #ffb3b3;">🚪 Log Out</a>
+            <a href="index.html" class="nav-item logout-btn" style="margin-top: auto; color: #ffb3b3;">🚪 Log Out</a>
         </nav>
 
         <main class="main-content">
@@ -174,65 +142,26 @@
                     <div id="calGrid" class="calendar-grid grid-month"></div>
                 </div>
             </div>
-            
+
             <div id="flashcards" class="content-section">
                 <div class="flashcard-studio">
                     <aside class="sets-sidebar">
-                        <h3>Saved Sets</h3>
-                        <div class="sets-list" id="saved-sets-list"></div>
+                        <h3>Your Sets</h3>
+                        <div class="sets-list" id="saved-sets-list">
+                            <p style="color:#999; font-size: 0.9rem;">No sets saved yet.</p>
+                        </div>
                     </aside>
                     <section class="studio-main">
-                        <div id="creation-ui" style="text-align: center;">
-                            <h2>Make a new set</h2>
-                            <button class="plus-btn" onclick="openModal()">+</button>
-                        </div>
-                        <div id="player-ui" style="display:none; text-align:center; width:100%;">
-                            <h3 id="active-set-title" style="margin-bottom:20px;">Set Title</h3>
-                            <div class="card-scene" onclick="document.getElementById('card-inner').classList.toggle('is-flipped')">
-                                <div class="card-inner" id="card-inner">
-                                    <div class="card-face" id="f-front">Question</div>
-                                    <div class="card-face card-face-back" id="f-back">Answer</div>
-                                </div>
-                            </div>
-                            <div style="display:flex; gap:15px; justify-content:center; align-items:center;">
-                                <button onclick="prevC()" class="view-switcher button">Prev</button>
-                                <span id="c-count">1 / 1</span>
-                                <button onclick="nextC()" class="view-switcher button">Next</button>
-                            </div>
-                            <button onclick="exitPlayer()" style="margin-top:20px; color:red; border:none; background:none; cursor:pointer;">Close Player</button>
-                        </div>
+                        <h2>Flashcards ready soon!</h2>
                     </section>
                 </div>
             </div>
         </main>
     </div>
 
-    <div id="createModal" class="modal">
-        <div class="modal-content">
-            <h3>Create New Set</h3>
-            <input type="text" id="set-title" placeholder="Set Title (e.g. Biology 101)" style="width:100%; padding:10px; margin:15px 0; border-radius:8px; border:1px solid #ddd;">
-            <div id="cards-input-area">
-                <div style="display:flex; gap:5px; margin-bottom:10px;">
-                    <input type="text" placeholder="Question" class="q-in" style="flex:1; padding:8px;">
-                    <input type="text" placeholder="Answer" class="a-in" style="flex:1; padding:8px;">
-                </div>
-            </div>
-            <button onclick="addNewInputRow()" style="background:#eee; border:none; padding:8px; width:100%; cursor:pointer; margin-bottom:15px;">+ Add Another Card</button>
-            <div style="display:flex; gap:10px;">
-                <button onclick="saveSet()" style="flex:1; background:var(--primary-purple); color:white; border:none; padding:12px; border-radius:8px; cursor:pointer;">Save Set</button>
-                <button onclick="closeModal()" style="flex:1; background:#ccc; border:none; padding:12px; border-radius:8px; cursor:pointer;">Cancel</button>
-            </div>
-        </div>
-    </div>
-
     <script>
-        // Use your real credentials here
-        const _supabase = supabase.createClient('YOUR_SUPABASE_URL', 'YOUR_SUPABASE_KEY');
-        
         let nav = 0; 
         let currentView = 'month';
-        let activeDeck = []; 
-        let cIdx = 0;
 
         function showSection(id) {
             document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
@@ -240,205 +169,113 @@
             document.getElementById(id).classList.add('active');
             document.getElementById('nav-'+id).classList.add('active');
             if(id === 'calendar') render();
-            if(id === 'flashcards') loadSets(); // Load data when clicking the tab
-        }
-
-        // --- FLASHCARD LOGIC ---
-        async function loadSets() {
-            const { data: { user } } = await _supabase.auth.getUser();
-            if(!user) {
-                document.getElementById('saved-sets-list').innerHTML = "<p style='padding:10px; font-size:0.8rem;'>Please log in to see sets.</p>";
-                return;
-            }
-            const { data, error } = await _supabase.from('flashcard_sets').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
-            
-            const list = document.getElementById('saved-sets-list');
-            if (data && data.length > 0) {
-                list.innerHTML = data.map(s => `
-                    <div class="set-item" onclick='startPlaying(${JSON.stringify(s.cards).replace(/'/g, "&apos;")}, "${s.title}")'>
-                        <h4 style="margin-bottom:5px;">${s.title}</h4>
-                        <span style="font-size:0.8rem; color:#666;">${s.cards.length} cards</span>
-                    </div>
-                `).join('');
-            } else {
-                list.innerHTML = '<p style="padding:10px;">No sets found.</p>';
-            }
-        }
-
-        async function saveSet() {
-            const { data: { user } } = await _supabase.auth.getUser();
-            if(!user) return alert("You must be logged in!");
-
-            const title = document.getElementById('set-title').value;
-            const qs = document.querySelectorAll('.q-in');
-            const as = document.querySelectorAll('.a-in');
-            const cards = [];
-            
-            qs.forEach((q, i) => { 
-                if(q.value.trim()) cards.push({q: q.value, a: as[i].value}); 
-            });
-
-            if(!title || cards.length === 0) return alert("Title and at least one card required");
-
-            const { error } = await _supabase.from('flashcard_sets').insert([{ user_id: user.id, title, cards }]);
-            if(!error) { 
-                closeModal(); 
-                loadSets(); 
-                // Reset fields
-                document.getElementById('set-title').value = '';
-                document.getElementById('cards-input-area').innerHTML = '<div style="display:flex; gap:5px; margin-bottom:10px;"><input type="text" placeholder="Question" class="q-in" style="flex:1; padding:8px;"><input type="text" placeholder="Answer" class="a-in" style="flex:1; padding:8px;"></div>';
-            } else { 
-                alert(error.message); 
-            }
-        }
-
-        function startPlaying(cards, title) {
-            activeDeck = cards; 
-            cIdx = 0;
-            document.getElementById('creation-ui').style.display = 'none';
-            document.getElementById('player-ui').style.display = 'block';
-            document.getElementById('active-set-title').innerText = title;
-            updateCardDisplay();
-        }
-
-        function updateCardDisplay() {
-            document.getElementById('card-inner').classList.remove('is-flipped');
-            document.getElementById('f-front').innerText = activeDeck[cIdx].q;
-            document.getElementById('f-back').innerText = activeDeck[cIdx].a;
-            document.getElementById('c-count').innerText = `${cIdx + 1} / ${activeDeck.length}`;
-        }
-
-        function nextC() { cIdx = (cIdx + 1) % activeDeck.length; updateCardDisplay(); }
-        function prevC() { cIdx = (cIdx - 1 + activeDeck.length) % activeDeck.length; updateCardDisplay(); }
-        function exitPlayer() { document.getElementById('creation-ui').style.display = 'block'; document.getElementById('player-ui').style.display = 'none'; }
-        
-        function openModal() { document.getElementById('createModal').style.display = 'flex'; }
-        function closeModal() { document.getElementById('createModal').style.display = 'none'; }
-        
-        function addNewInputRow() {
-            const div = document.createElement('div'); 
-            div.style.display='flex'; div.style.gap='5px'; div.style.marginBottom='10px';
-            div.innerHTML = `<input type="text" placeholder="Question" class="q-in" style="flex:1; padding:8px;"><input type="text" placeholder="Answer" class="a-in" style="flex:1; padding:8px;">`;
-            document.getElementById('cards-input-area').appendChild(div);
         }
 
         /* --- CALENDAR LOGIC --- */
-let nav = 0; 
-let currentView = 'month';
+        function changeView(v) {
+            currentView = v; 
+            nav = 0; // Reset navigation when switching views
+            document.querySelectorAll('.view-switcher button').forEach(b => b.classList.remove('active'));
+            document.getElementById(v + 'Btn').classList.add('active');
+            render();
+        }
 
-function changeView(v) {
-    currentView = v; 
-    nav = 0;
-    document.querySelectorAll('.view-switcher button').forEach(b => b.classList.remove('active'));
-    document.getElementById(v + 'Btn').classList.add('active');
-    render();
-}
+        function changeDate(dir) {
+            nav += dir;
+            render();
+        }
 
-function changeDate(dir) {
-    nav += dir;
-    render();
-}
+        function render() {
+            const grid = document.getElementById('calGrid');
+            grid.innerHTML = '';
+            grid.className = `calendar-grid grid-${currentView}`;
+            
+            const dt = new Date();
+            
+            if (currentView === 'month') {
+                dt.setMonth(new Date().getMonth() + nav);
+                renderMonth(dt);
+            } else if (currentView === 'week') {
+                dt.setDate(new Date().getDate() + (nav * 7));
+                renderWeek(dt);
+            } else {
+                dt.setDate(new Date().getDate() + nav);
+                renderDay(dt);
+            }
+        }
 
-function render() {
-    const grid = document.getElementById('calGrid');
-    grid.innerHTML = '';
-    grid.className = `calendar-grid grid-${currentView}`;
-    
-    const dt = new Date();
-    
-    if (currentView === 'month') {
-        dt.setMonth(new Date().getMonth() + nav);
-        renderMonth(dt);
-    } else if (currentView === 'week') {
-        dt.setDate(new Date().getDate() + (nav * 7));
-        renderWeek(dt);
-    } else {
-        dt.setDate(new Date().getDate() + nav);
-        renderDay(dt);
-    }
-}
+        function renderMonth(dt) {
+            const grid = document.getElementById('calGrid');
+            const month = dt.getMonth();
+            const year = dt.getFullYear();
+            
+            document.getElementById('monthLabel').innerText = dt.toLocaleDateString('en-us', {month:'long', year:'numeric'});
 
-function renderMonth(dt) {
-    const grid = document.getElementById('calGrid');
-    const month = dt.getMonth();
-    const year = dt.getFullYear();
-    
-    document.getElementById('monthLabel').innerText = dt.toLocaleDateString('en-us', {month:'long', year:'numeric'});
+            const firstDayOfMonth = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-    const firstDayOfMonth = new Date(year, month, 1).getDay();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
+            // Render Weekday Headers
+            ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(day => {
+                const h = document.createElement('div');
+                h.className = 'day-header';
+                h.innerText = day;
+                grid.appendChild(h);
+            });
 
-    // Headers
-    ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(day => {
-        const h = document.createElement('div');
-        h.className = 'day-header';
-        h.innerText = day;
-        grid.appendChild(h);
-    });
+            // Padding days
+            for(let i=0; i < firstDayOfMonth; i++) {
+                const p = document.createElement('div');
+                p.className = 'day-box padding-day';
+                grid.appendChild(p);
+            }
 
-    // Padding
-    for(let i=0; i < firstDayOfMonth; i++) {
-        const p = document.createElement('div');
-        p.className = 'day-box padding-day';
-        grid.appendChild(p);
-    }
+            // Days of the month
+            for(let i=1; i <= daysInMonth; i++) {
+                const dayBox = document.createElement('div');
+                dayBox.className = 'day-box';
+                const isToday = i === new Date().getDate() && dt.getMonth() === new Date().getMonth() && dt.getFullYear() === new Date().getFullYear();
+                if(isToday) dayBox.classList.add('today');
+                dayBox.innerText = i;
+                grid.appendChild(dayBox);
+            }
+        }
 
-    // Days
-    for(let i=1; i <= daysInMonth; i++) {
-        const dayBox = document.createElement('div');
-        dayBox.className = 'day-box';
-        const isToday = i === new Date().getDate() && 
-                        dt.getMonth() === new Date().getMonth() && 
-                        dt.getFullYear() === new Date().getFullYear();
-        
-        if(isToday) dayBox.classList.add('today');
-        dayBox.innerHTML = `<span style="font-size: 1.1rem;">${i}</span>`;
-        grid.appendChild(dayBox);
-    }
-}
+        function renderWeek(dt) {
+            const grid = document.getElementById('calGrid');
+            const startOfWeek = new Date(dt);
+            startOfWeek.setDate(dt.getDate() - dt.getDay());
+            
+            document.getElementById('monthLabel').innerText = `Week of ${startOfWeek.toLocaleDateString('en-us', {month:'short', day:'numeric'})}`;
+            
+            for(let i=0; i<7; i++) {
+                const day = new Date(startOfWeek);
+                day.setDate(startOfWeek.getDate() + i);
+                
+                const dayBox = document.createElement('div');
+                dayBox.className = 'day-box';
+                if(day.toDateString() === new Date().toDateString()) dayBox.classList.add('today');
+                
+                dayBox.innerHTML = `<span style="font-size:0.8rem; color:#999; font-weight:bold">${day.toLocaleDateString('en-us',{weekday:'short'})}</span>
+                                    <span style="font-size:1.8rem">${day.getDate()}</span>`;
+                grid.appendChild(dayBox);
+            }
+        }
 
-function renderWeek(dt) {
-    const grid = document.getElementById('calGrid');
-    const startOfWeek = new Date(dt);
-    startOfWeek.setDate(dt.getDate() - dt.getDay());
-    
-    document.getElementById('monthLabel').innerText = `Week of ${startOfWeek.toLocaleDateString('en-us', {month:'short', day:'numeric'})}`;
-    
-    for(let i=0; i<7; i++) {
-        const day = new Date(startOfWeek);
-        day.setDate(startOfWeek.getDate() + i);
-        
-        const dayBox = document.createElement('div');
-        dayBox.className = 'day-box';
-        if(day.toDateString() === new Date().toDateString()) dayBox.classList.add('today');
-        
-        dayBox.innerHTML = `
-            <span style="font-size:0.8rem; color:#999; font-weight:bold; margin-bottom: 10px;">${day.toLocaleDateString('en-us',{weekday:'short'})}</span>
-            <span style="font-size:2rem; font-weight:600;">${day.getDate()}</span>
-        `;
-        grid.appendChild(dayBox);
-    }
-}
+        function renderDay(dt) {
+            const grid = document.getElementById('calGrid');
+            document.getElementById('monthLabel').innerText = dt.toLocaleDateString('en-us', {weekday:'long', month:'long', day:'numeric'});
+            
+            const dayBox = document.createElement('div');
+            dayBox.className = 'day-box';
+            dayBox.innerHTML = `<span style="font-size:4rem">${dt.getDate()}</span>
+                                <span style="color:#666">${dt.toLocaleDateString('en-us', {month: 'long'})}</span>`;
+            if(dt.toDateString() === new Date().toDateString()) dayBox.classList.add('today');
+            
+            grid.appendChild(dayBox);
+        }
 
-function renderDay(dt) {
-    const grid = document.getElementById('calGrid');
-    document.getElementById('monthLabel').innerText = dt.toLocaleDateString('en-us', {weekday:'long', month:'long', day:'numeric'});
-    
-    const dayBox = document.createElement('div');
-    dayBox.className = 'day-box';
-    dayBox.style.justifyContent = 'center';
-    
-    dayBox.innerHTML = `
-        <span style="font-size:5rem; font-weight:bold; color:var(--primary-purple);">${dt.getDate()}</span>
-        <span style="font-size:1.5rem; color:#666;">${dt.toLocaleDateString('en-us', {month: 'long'})}</span>
-    `;
-    if(dt.toDateString() === new Date().toDateString()) dayBox.classList.add('today');
-    
-    grid.appendChild(dayBox);
-}
-
-// Ensure it renders on start
-window.onload = () => { render(); };
+        // Initialize
+        render();
     </script>
 </body>
 </html>
