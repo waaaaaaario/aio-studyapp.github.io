@@ -258,6 +258,16 @@
     background-color: #ddd;
     border-radius: 10px;
 }
+        .content-section { 
+    display: none; 
+    height: 100%; 
+    width: 100%; /* Ensure it fills the main content area */
+}
+
+.content-section.active { 
+    display: flex; 
+    flex-direction: column; 
+}
     </style>
 </head>
 <body>
@@ -344,31 +354,31 @@
                     </section>
                 </div>
             </div>
+            <div id="quizzes" class="content-section">
+                <div class="flashcard-studio">
+                    <aside class="sets-sidebar">
+                        <h3>Your Quizzes</h3>
+                        <div class="sets-list" id="quiz-sets-list">
+                            </div>
+                    </aside>
+        
+                    <section class="studio-main">
+                        <div id="quiz-creation-ui" style="text-align: center;">
+                            <h2>Create a Quiz</h2>
+                            <button class="plus-btn" onclick="openQuizModal()"> + </button>
+                        </div>
+            
+                        <div id="quiz-player-ui" style="display:none; width:100%; max-width:600px;">
+                            <h3 id="quiz-player-title"></h3>
+                            <div id="question-container" style="background:#f9f9f9; padding:30px; border-radius:15px; margin:20px 0;">
+                                </div>
+                            <button onclick="submitAnswer()" class="view-switcher button" style="background:var(--primary-purple); color:white; width:100%;">Check Answer</button>
+                          </div>
+                    </section>
+                </div>
+            </div>
         </main>
     </div>
-<div id="quizzes" class="content-section">
-    <div class="flashcard-studio">
-        <aside class="sets-sidebar">
-            <h3>Your Quizzes</h3>
-            <div class="sets-list" id="quiz-sets-list">
-                </div>
-        </aside>
-        
-        <section class="studio-main">
-            <div id="quiz-creation-ui" style="text-align: center;">
-                <h2>Create a Quiz</h2>
-                <button class="plus-btn" onclick="openQuizModal()"> + </button>
-            </div>
-            
-            <div id="quiz-player-ui" style="display:none; width:100%; max-width:600px;">
-                <h3 id="quiz-player-title"></h3>
-                <div id="question-container" style="background:#f9f9f9; padding:30px; border-radius:15px; margin:20px 0;">
-                    </div>
-                <button onclick="submitAnswer()" class="view-switcher button" style="background:var(--primary-purple); color:white; width:100%;">Check Answer</button>
-            </div>
-        </section>
-    </div>
-</div>
     <div id="createModal" class="modal">
         <div class="modal-content">
             <h3 id="modal-title">Create New Set</h3>
@@ -739,6 +749,26 @@ function renderQuestion(index) {
     } else {
         container.innerHTML += `<input type="text" id="quiz-text-input" style="width:100%; padding:10px; margin-top:10px;" placeholder="Type your answer...">`;
     }
+}
+        function openQuizModal() {
+    document.getElementById('quizModal').style.display = 'flex';
+}
+
+function closeQuizModal() {
+    document.getElementById('quizModal').style.display = 'none';
+    document.getElementById('quiz-questions-area').innerHTML = '';
+    document.getElementById('quiz-set-title').value = '';
+}
+
+// Basic save function to get you started
+async function saveQuiz() {
+    const title = document.getElementById('quiz-set-title').value;
+    if (!title) return alert("Please enter a title");
+    
+    // For now, let's just close the modal. 
+    // Later we will add the Supabase 'insert' logic here.
+    alert("Quiz Logic Ready! Next step: Connect to Supabase.");
+    closeQuizModal();
 }
 
         // Initialize
