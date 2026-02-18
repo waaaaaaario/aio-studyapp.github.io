@@ -30,7 +30,7 @@
         }
         .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.1); color: white; }
 
-        /* Main Content Area */
+        /* Main Content */
         .main-content { flex: 1; padding: 30px; display: flex; flex-direction: column; height: 100vh; }
         .content-section { display: none; height: 100%; }
         .content-section.active { display: flex; flex-direction: column; }
@@ -70,7 +70,7 @@
         }
         .card-face-back { background: var(--accent-yellow); transform: rotateY(180deg); }
 
-        /* Calendar Card Styles */
+        /* Calendar Card */
         .calendar-card {
             background: white; padding: 20px; border-radius: 20px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.05); flex-grow: 1; 
@@ -81,22 +81,22 @@
             margin-bottom: 15px; flex-shrink: 0;
         }
         .view-switcher button, .nav-btns button {
-            padding: 6px 12px; border: 1px solid #ddd; background: white;
+            padding: 8px 15px; border: 1px solid #ddd; background: white;
             cursor: pointer; border-radius: 6px; font-weight: 600;
         }
         .view-switcher button.active { background: var(--accent-yellow); border-color: var(--accent-yellow); }
 
         .calendar-grid { display: grid; gap: 5px; flex-grow: 1; height: 100%; }
-        .grid-month, .grid-week { grid-template-columns: repeat(7, 1fr); }
+        .grid-month, .grid-week { grid-template-columns: repeat(7, 1fr); grid-template-rows: auto repeat(6, 1fr); }
         .grid-day { grid-template-columns: 1fr; }
 
         .day-box {
             border: 1px solid #f0f0f0; border-radius: 8px; display: flex;
             flex-direction: column; align-items: center; justify-content: center;
-            font-size: 0.85rem; background: #fff; padding: 5px;
+            font-size: 1rem; background: #fff; padding: 5px;
         }
-        .day-header { font-weight: bold; color: #999; font-size: 0.7rem; vertical-align: top; }
-        .today { background: var(--accent-yellow); font-weight: bold; }
+        .day-header { font-weight: bold; color: #999; font-size: 0.8rem; text-align: center; padding-bottom: 5px; }
+        .today { background: var(--accent-yellow); font-weight: bold; border-color: #f0c500; }
         .padding-day { opacity: 0.3; background: #fafafa; }
         
         /* Modal */
@@ -196,9 +196,10 @@
     </div>
 
     <script>
-        // Supabase Init
+        // Supabase Initialization
         const _supabase = supabase.createClient('YOUR_URL', 'YOUR_KEY');
         
+        // Navigation & Flashcard State
         let nav = 0; 
         let currentView = 'month';
         let activeDeck = []; 
@@ -213,7 +214,7 @@
             if(id === 'flashcards') loadSets();
         }
 
-        // FLASHCARD LOGIC
+        /* --- FLASHCARD LOGIC --- */
         async function loadSets() {
             const { data: { user } } = await _supabase.auth.getUser();
             if(!user) return;
@@ -266,15 +267,19 @@
             document.getElementById('cards-input-area').appendChild(div);
         }
 
-        // CALENDAR LOGIC (From the second code snippet)
+        /* --- CALENDAR LOGIC --- */
         function changeView(v) {
-            currentView = v; nav = 0;
+            currentView = v; 
+            nav = 0;
             document.querySelectorAll('.view-switcher button').forEach(b => b.classList.remove('active'));
             document.getElementById(v + 'Btn').classList.add('active');
             render();
         }
 
-        function changeDate(dir) { nav += dir; render(); }
+        function changeDate(dir) {
+            nav += dir;
+            render();
+        }
 
         function render() {
             const grid = document.getElementById('calGrid');
@@ -282,9 +287,14 @@
             grid.className = `calendar-grid grid-${currentView}`;
             
             const dt = new Date();
-            if (currentView === 'month') dt.setMonth(new Date().getMonth() + nav);
-            else if (currentView === 'week') dt.setDate(new Date().getDate() + (nav * 7));
-            else dt.setDate(new Date().getDate() + nav);
+            // Adjust base date by navigation
+            if (currentView === 'month') {
+                dt.setMonth(new Date().getMonth() + nav);
+            } else if (currentView === 'week') {
+                dt.setDate(new Date().getDate() + (nav * 7));
+            } else {
+                dt.setDate(new Date().getDate() + nav);
+            }
 
             if (currentView === 'month') renderMonth(dt);
             else if (currentView === 'week') renderWeek(dt);
@@ -292,48 +302,76 @@
         }
 
         function renderMonth(dt) {
+            const grid = document.getElementById('calGrid');
             const month = dt.getMonth();
             const year = dt.getFullYear();
-            const grid = document.getElementById('calGrid');
+            
             document.getElementById('monthLabel').innerText = dt.toLocaleDateString('en-us', {month:'long', year:'numeric'});
 
-            const firstDay = new Date(year, month, 1).getDay();
+            const firstDayOfMonth = new Date(year, month, 1).getDay();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-            ['S','M','T','W','T','F','S'].forEach(d => {
-                const h = document.createElement('div'); h.className = 'day-header'; h.innerText = d; grid.appendChild(h);
+            // Headers
+            ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(day => {
+                const h = document.createElement('div');
+                h.className = 'day-header';
+                h.innerText = day;
+                grid.appendChild(h);
             });
 
-            for(let i=0; i<firstDay; i++) grid.appendChild(Object.assign(document.createElement('div'), {className:'day-box padding-day'}));
-            for(let i=1; i<=daysInMonth; i++) {
-                const d = document.createElement('div'); d.className = 'day-box';
-                if(i === new Date().getDate() && nav === 0) d.classList.add('today');
-                d.innerText = i; grid.appendChild(d);
+            // Padding for start of month
+            for(let i=0; i < firstDayOfMonth; i++) {
+                const p = document.createElement('div');
+                p.className = 'day-box padding-day';
+                grid.appendChild(p);
+            }
+
+            // Actual days
+            for(let i=1; i <= daysInMonth; i++) {
+                const dayBox = document.createElement('div');
+                dayBox.className = 'day-box';
+                if(i === new Date().getDate() && dt.getMonth() === new Date().getMonth() && dt.getFullYear() === new Date().getFullYear()) {
+                    dayBox.classList.add('today');
+                }
+                dayBox.innerText = i;
+                grid.appendChild(dayBox);
             }
         }
 
         function renderWeek(dt) {
             const grid = document.getElementById('calGrid');
-            const start = new Date(dt);
-            start.setDate(dt.getDate() - dt.getDay());
+            const startOfWeek = new Date(dt);
+            startOfWeek.setDate(dt.getDate() - dt.getDay());
+            
             document.getElementById('monthLabel').innerText = "Week View";
+            
             for(let i=0; i<7; i++) {
-                const day = new Date(start); day.setDate(start.getDate() + i);
-                const d = document.createElement('div'); d.className = 'day-box';
-                if(day.toDateString() === new Date().toDateString()) d.classList.add('today');
-                d.innerHTML = `<b>${day.toLocaleDateString('en-us',{weekday:'short'})}</b><br>${day.getDate()}`;
-                grid.appendChild(d);
+                const day = new Date(startOfWeek);
+                day.setDate(startOfWeek.getDate() + i);
+                
+                const dayBox = document.createElement('div');
+                dayBox.className = 'day-box';
+                if(day.toDateString() === new Date().toDateString()) dayBox.classList.add('today');
+                
+                dayBox.innerHTML = `<b>${day.toLocaleDateString('en-us',{weekday:'short'})}</b><br>${day.getDate()}`;
+                grid.appendChild(dayBox);
             }
         }
 
         function renderDay(dt) {
             const grid = document.getElementById('calGrid');
             document.getElementById('monthLabel').innerText = dt.toLocaleDateString('en-us', {weekday:'long', month:'short', day:'numeric'});
-            const d = document.createElement('div'); d.className = 'day-box'; d.style.fontSize = '2rem'; d.innerText = dt.getDate();
-            if(dt.toDateString() === new Date().toDateString()) d.classList.add('today');
-            grid.appendChild(d);
+            
+            const dayBox = document.createElement('div');
+            dayBox.className = 'day-box';
+            dayBox.style.fontSize = '2.5rem';
+            dayBox.innerText = dt.getDate();
+            if(dt.toDateString() === new Date().toDateString()) dayBox.classList.add('today');
+            
+            grid.appendChild(dayBox);
         }
 
+        // Initial render call
         render();
     </script>
 </body>
