@@ -17,70 +17,66 @@
         body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-light); height: 100vh; overflow: hidden; }
         .layout { display: flex; height: 100vh; }
         
-        /* Sidebar */
-        .sidebar {
-            width: 260px;
-            background: linear-gradient(180deg, var(--primary-purple), var(--secondary-blue));
-            color: white; padding: 30px; display: flex; flex-direction: column; flex-shrink: 0;
-            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s;
-            position: relative;
-        }
+        /* Sidebar sizing and transition */
+.sidebar {
+    width: 260px;
+    background: linear-gradient(180deg, var(--primary-purple), var(--secondary-blue));
+    color: white; 
+    padding: 20px; /* Reduced padding slightly for better button fit */
+    display: flex; 
+    flex-direction: column; 
+    flex-shrink: 0;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
 
-        .sidebar.collapsed {
-            width: 80px;
-            padding: 30px 10px;
-        }
+/* Collapsed state */
+.sidebar.collapsed {
+    width: 80px;
+}
 
-        .sidebar h2 { 
-            margin-bottom: 40px; 
-            font-size: 1.5rem; 
-            letter-spacing: 1px; 
-            white-space: nowrap;
-        }
+/* THE MAGIC: Hide text labels when collapsed */
+.sidebar.collapsed .nav-item span,
+.sidebar.collapsed h2 {
+    display: none;
+}
 
-        .sidebar.collapsed h2, 
-        .sidebar.collapsed .nav-item span {
-            display: none;
-        }
-
-        /* Updated Toggle Button Style */
+/* Rectangular Toggle Button */
 .toggle-btn {
-    position: relative; /* Changed from absolute to sit in the flow */
-    width: 100%;        /* Takes full width of the sidebar padding */
-    height: 40px;
-    background: rgba(255, 255, 255, 0.1);
+    width: 100%;
+    height: 45px;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
     color: white;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 8px; /* Slightly rounded corners for a modern look */
     cursor: pointer;
+    font-size: 1.2rem;
+    margin-bottom: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 20px; /* Space between button and Dashboard */
-    transition: all 0.3s ease;
+    transition: all 0.3s;
 }
 
 .toggle-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.25);
 }
 
-/* When collapsed, we want it to look like a square icon */
-.sidebar.collapsed .toggle-btn {
-    width: 40px;
-    margin-left: auto;
-    margin-right: auto;
+/* Navigation items alignment */
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 12px;
     border-radius: 8px;
+    white-space: nowrap; /* Prevents text from wrapping before it hides */
+    overflow: hidden;
 }
-        .nav-item { 
-            color: rgba(255,255,255,0.7); text-decoration: none; margin-bottom: 15px; 
-            font-weight: 600; padding: 12px; border-radius: 8px; transition: 0.3s; cursor: pointer;
-        }
-        .sidebar.collapsed .nav-item {
-            text-align: center;
-            font-size: 1.2rem;
-            padding: 12px 0;
-        }
-        .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.1); color: white; }
+
+.sidebar.collapsed .nav-item {
+    justify-content: center; /* Centers the icon when text is gone */
+    padding: 12px 0;
+}
 
         /* Main Content */
         .main-content { flex: 1; padding: 30px; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
@@ -254,14 +250,25 @@
 
     <div class="layout">
         <nav class="sidebar" id="sidebar">
-            <button class="toggle-btn" onclick="toggleSidebar()">
-                <span id="toggle-icon">☰</span>
-            </button>
-            <h2 style="margin-bottom: 20px;">STUDYAPP</h2>
-            <div id="nav-dashboard" class="nav-item active" onclick="showSection('dashboard')">🏠 Dashboard</div>
-            <div id="nav-calendar" class="nav-item" onclick="showSection('calendar')">📅 Calendar</div>
-            <div id="nav-flashcards" class="nav-item" onclick="showSection('flashcards')">🃏 Flashcards</div>
-            <a href="index.html" class="nav-item logout-btn" style="margin-top: auto; color: #ffb3b3;">🚪 Log Out</a>
+            <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+    
+          <h2>STUDYAPP</h2>
+
+            <div id="nav-dashboard" class="nav-item active" onclick="showSection('dashboard')">
+                <div class="icon">🏠</div> <span>Dashboard</span>
+            </div>
+    
+            <div id="nav-calendar" class="nav-item" onclick="showSection('calendar')">
+                <div class="icon">📅</div> <span>Calendar</span>
+            </div>
+    
+            <div id="nav-flashcards" class="nav-item" onclick="showSection('flashcards')">
+                <div class="icon">🃏</div> <span>Flashcards</span>
+            </div>
+
+            <a href="index.html" class="nav-item logout-btn" style="margin-top: auto; color: #ffb3b3; text-decoration: none;">
+                <div class="icon">🚪</div> <span>Log Out</span>
+            </a>
         </nav>
 
         <main class="main-content">
@@ -361,15 +368,7 @@
 
         function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
-    const icon = document.getElementById('toggle-icon');
-    
     sidebar.classList.toggle('collapsed');
-    
-    if (sidebar.classList.contains('collapsed')) {
-        icon.innerText = '➜'; // Show arrow when collapsed
-    } else {
-        icon.innerText = '☰'; // Show bars when expanded
-    }
 }
 
         function showSection(id) {
