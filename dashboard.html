@@ -146,22 +146,58 @@
             <div id="flashcards" class="content-section">
                 <div class="flashcard-studio">
                     <aside class="sets-sidebar">
-                        <h3>Your Sets</h3>
-                        <div class="sets-list" id="saved-sets-list">
-                            <p style="color:#999; font-size: 0.9rem;">No sets saved yet.</p>
-                        </div>
+                        <h3>Saved Sets</h3>
+                        <div class="sets-list" id="saved-sets-list"></div>
                     </aside>
                     <section class="studio-main">
-                        <h2>Flashcards ready soon!</h2>
+                        <div id="creation-ui" style="text-align: center;">
+                            <h2>Make a new set</h2>
+                            <button class="plus-btn" onclick="openModal()">+</button>
+                        </div>
+                        <div id="player-ui" style="display:none; text-align:center; width:100%;">
+                            <h3 id="active-set-title" style="margin-bottom:20px;">Set Title</h3>
+                            <div class="card-scene" onclick="document.getElementById('card-inner').classList.toggle('is-flipped')">
+                                <div class="card-inner" id="card-inner">
+                                    <div class="card-face" id="f-front">Question</div>
+                                    <div class="card-face card-face-back" id="f-back">Answer</div>
+                                </div>
+                            </div>
+                            <div style="display:flex; gap:15px; justify-content:center; align-items:center;">
+                                <button onclick="prevC()" class="view-switcher button">Prev</button>
+                                <span id="c-count">1 / 1</span>
+                                <button onclick="nextC()" class="view-switcher button">Next</button>
+                            </div>
+                            <button onclick="exitPlayer()" style="margin-top:20px; color:red; border:none; background:none; cursor:pointer;">Close Player</button>
+                        </div>
                     </section>
                 </div>
             </div>
         </main>
     </div>
 
+    <div id="createModal" class="modal">
+        <div class="modal-content">
+            <h3>Create New Set</h3>
+            <input type="text" id="set-title" placeholder="Set Title (e.g. Biology 101)" style="width:100%; padding:10px; margin:15px 0; border-radius:8px; border:1px solid #ddd;">
+            <div id="cards-input-area">
+                <div style="display:flex; gap:5px; margin-bottom:10px;">
+                    <input type="text" placeholder="Question" class="q-in" style="flex:1; padding:8px;">
+                    <input type="text" placeholder="Answer" class="a-in" style="flex:1; padding:8px;">
+                </div>
+            </div>
+            <button onclick="addNewInputRow()" style="background:#eee; border:none; padding:8px; width:100%; cursor:pointer; margin-bottom:15px;">+ Add Another Card</button>
+            <div style="display:flex; gap:10px;">
+                <button onclick="saveSet()" style="flex:1; background:var(--primary-purple); color:white; border:none; padding:12px; border-radius:8px; cursor:pointer;">Save Set</button>
+                <button onclick="closeModal()" style="flex:1; background:#ccc; border:none; padding:12px; border-radius:8px; cursor:pointer;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         let nav = 0; 
         let currentView = 'month';
+        let activeDeck = []; 
+        let cIdx = 0;
 
         function showSection(id) {
             document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
@@ -169,6 +205,7 @@
             document.getElementById(id).classList.add('active');
             document.getElementById('nav-'+id).classList.add('active');
             if(id === 'calendar') render();
+            if(id === 'flashcards') loadSets(); // Load data when clicking the tab
         }
 
         /* --- CALENDAR LOGIC --- */
@@ -272,6 +309,84 @@
             if(dt.toDateString() === new Date().toDateString()) dayBox.classList.add('today');
             
             grid.appendChild(dayBox);
+        }
+        // --- FLASHCARD LOGIC ---
+        async function loadSets() {
+            const { data: { user } } = await _supabase.auth.getUser();
+            if(!user) {
+                document.getElementById('saved-sets-list').innerHTML = "<p style='padding:10px; font-size:0.8rem;'>Please log in to see sets.</p>";
+                return;
+            }
+            const { data, error } = await _supabase.from('flashcard_sets').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
+            
+            const list = document.getElementById('saved-sets-list');
+            if (data && data.length > 0) {
+                list.innerHTML = data.map(s => `
+                    <div class="set-item" onclick='startPlaying(${JSON.stringify(s.cards).replace(/'/g, "&apos;")}, "${s.title}")'>
+                        <h4 style="margin-bottom:5px;">${s.title}</h4>
+                        <span style="font-size:0.8rem; color:#666;">${s.cards.length} cards</span>
+                    </div>
+                `).join('');
+            } else {
+                list.innerHTML = '<p style="padding:10px;">No sets found.</p>';
+            }
+        }
+
+        async function saveSet() {
+            const { data: { user } } = await _supabase.auth.getUser();
+            if(!user) return alert("You must be logged in!");
+
+            const title = document.getElementById('set-title').value;
+            const qs = document.querySelectorAll('.q-in');
+            const as = document.querySelectorAll('.a-in');
+            const cards = [];
+            
+            qs.forEach((q, i) => { 
+                if(q.value.trim()) cards.push({q: q.value, a: as[i].value}); 
+            });
+
+            if(!title || cards.length === 0) return alert("Title and at least one card required");
+
+            const { error } = await _supabase.from('flashcard_sets').insert([{ user_id: user.id, title, cards }]);
+            if(!error) { 
+                closeModal(); 
+                loadSets(); 
+                // Reset fields
+                document.getElementById('set-title').value = '';
+                document.getElementById('cards-input-area').innerHTML = '<div style="display:flex; gap:5px; margin-bottom:10px;"><input type="text" placeholder="Question" class="q-in" style="flex:1; padding:8px;"><input type="text" placeholder="Answer" class="a-in" style="flex:1; padding:8px;"></div>';
+            } else { 
+                alert(error.message); 
+            }
+        }
+
+        function startPlaying(cards, title) {
+            activeDeck = cards; 
+            cIdx = 0;
+            document.getElementById('creation-ui').style.display = 'none';
+            document.getElementById('player-ui').style.display = 'block';
+            document.getElementById('active-set-title').innerText = title;
+            updateCardDisplay();
+        }
+
+        function updateCardDisplay() {
+            document.getElementById('card-inner').classList.remove('is-flipped');
+            document.getElementById('f-front').innerText = activeDeck[cIdx].q;
+            document.getElementById('f-back').innerText = activeDeck[cIdx].a;
+            document.getElementById('c-count').innerText = `${cIdx + 1} / ${activeDeck.length}`;
+        }
+
+        function nextC() { cIdx = (cIdx + 1) % activeDeck.length; updateCardDisplay(); }
+        function prevC() { cIdx = (cIdx - 1 + activeDeck.length) % activeDeck.length; updateCardDisplay(); }
+        function exitPlayer() { document.getElementById('creation-ui').style.display = 'block'; document.getElementById('player-ui').style.display = 'none'; }
+        
+        function openModal() { document.getElementById('createModal').style.display = 'flex'; }
+        function closeModal() { document.getElementById('createModal').style.display = 'none'; }
+        
+        function addNewInputRow() {
+            const div = document.createElement('div'); 
+            div.style.display='flex'; div.style.gap='5px'; div.style.marginBottom='10px';
+            div.innerHTML = `<input type="text" placeholder="Question" class="q-in" style="flex:1; padding:8px;"><input type="text" placeholder="Answer" class="a-in" style="flex:1; padding:8px;">`;
+            document.getElementById('cards-input-area').appendChild(div);
         }
 
         // Initialize
