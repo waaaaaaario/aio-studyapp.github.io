@@ -268,6 +268,19 @@
     display: flex; 
     flex-direction: column; 
 }
+        .feedback-correct {
+    background-color: #d4edda !important;
+    color: #155724 !important;
+    border: 1px solid #c3e6cb;
+    display: block;
+}
+
+.feedback-incorrect {
+    background-color: #f8d7da !important;
+    color: #721c24 !important;
+    border: 1px solid #f5c6cb;
+    display: block;
+}
     </style>
 </head>
 <body>
@@ -374,7 +387,7 @@
                                 </div>
                                     <div id="quiz-controls" style="margin-top: 20px;">
     
-                        <button id="submit-btn" onclick="submitAnswer()" class="view-switcher button" 
+                        <button id="submit-btn" onclick="()" class="view-switcher button" 
             style="background:var(--primary-purple); color:white; width:100%; padding: 15px; border-radius: 10px;">
         Check Answer
     </button>
@@ -756,32 +769,43 @@ function submitAnswer() {
     const submitBtn = document.getElementById('submit-btn');
     const feedbackGroup = document.getElementById('feedback-group');
     
-    let userAnswer = "";
     let isCorrect = false;
 
-    // 1. Validation Logic
+    // 1. VALIDATION & LOGIC
     if (q.type === 'multiple-choice') {
         const selected = document.querySelector('input[name="quiz-opt"]:checked');
-        if (!selected) return; // Optional: add a subtle shake animation here
-        userAnswer = selected.value;
-        isCorrect = (userAnswer === q.answer);
+        
+        // If nothing is selected, shake and stop
+        if (!selected) {
+            submitBtn.classList.add('shake');
+            setTimeout(() => submitBtn.classList.remove('shake'), 300);
+            return; 
+        }
+
+        // Compare selected value to the stored answer string
+        if (selected.value === q.answer) {
+            isCorrect = true;
+        }
     } else {
-        userAnswer = document.getElementById('quiz-text-input').value.trim();
-        if (!userAnswer) return;
-        isCorrect = q.answer.some(a => a.toLowerCase() === userAnswer.toLowerCase());
+        const userText = document.getElementById('quiz-text-input').value.trim().toLowerCase();
+        
+        if (userText === "") return; // Don't submit empty text
+
+        // Check if user input matches ANY of the acceptable answers in the array
+        isCorrect = q.answer.some(a => a.toLowerCase().trim() === userText);
     }
 
-    // 2. Set Feedback Content
+    // 2. UI FEEDBACK
     if (isCorrect) {
-        feedback.innerText = "✨ Correct!";
-        feedback.className = 'feedback-correct';
+        feedback.innerText = "✨ Correct! Well done.";
+        feedback.className = 'feedback-correct'; // Applies green styling
     } else {
         const correctDisplay = q.type === 'multiple-choice' ? q.answer : q.answer.join(", ");
-        feedback.innerText = `❌ Incorrect (Ans: ${correctDisplay})`;
-        feedback.className = 'feedback-incorrect';
+        feedback.innerText = `❌ Incorrect. The answer was: ${correctDisplay}`;
+        feedback.className = 'feedback-incorrect'; // Applies red styling
     }
 
-    // 3. THE SWAP: Hide Submit, Show Feedback/Next
+    // 3. THE SWAP
     submitBtn.style.display = 'none';
     feedbackGroup.style.display = 'block';
 }
