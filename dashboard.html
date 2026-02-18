@@ -266,6 +266,7 @@
         let currentView = 'month';
         let activeDeck = []; 
         let cIdx = 0;
+        let editingSetId = null; // Keeps track of which set we are editing
 
         // Replace these with your actual details from the Supabase dashboard
         let supabaseUrl = 'REPLACE_WITH_SUPABASE_URL'; 
@@ -417,33 +418,64 @@
         </div>
     `).join('');
 }
+        function editSet(set) {
+    editingSetId = set.id; // Store the ID so we know we're editing
+    document.getElementById('set-title').value = set.title;
+    
+    const container = document.getElementById('cards-input-area');
+    container.innerHTML = ''; // Clear existing rows
+
+    set.cards.forEach(card => {
+        const div = document.createElement('div');
+        div.style.display='flex'; div.style.gap='5px'; div.style.marginBottom='10px';
+        div.innerHTML = `
+            <input type="text" value="${card.q}" class="q-in" style="flex:1; padding:8px;">
+            <input type="text" value="${card.a}" class="a-in" style="flex:1; padding:8px;">
+        `;
+        container.appendChild(div);
+    });
+
+    openModal();
+}
 
         async function saveSet() {
-            const { data: { user } } = await _supabase.auth.getUser();
-            if(!user) return alert("You must be logged in!");
+    const { data: { user } } = await _supabase.auth.getUser();
+    const title = document.getElementById('set-title').value;
+    const qs = document.querySelectorAll('.q-in');
+    const as = document.querySelectorAll('.a-in');
+    const cards = [];
+    
+    qs.forEach((q, i) => { 
+        if(q.value.trim()) cards.push({q: q.value, a: as[i].value}); 
+    });
 
-            const title = document.getElementById('set-title').value;
-            const qs = document.querySelectorAll('.q-in');
-            const as = document.querySelectorAll('.a-in');
-            const cards = [];
-            
-            qs.forEach((q, i) => { 
-                if(q.value.trim()) cards.push({q: q.value, a: as[i].value}); 
-            });
+    if(!title || cards.length === 0) return alert("Title and cards required");
 
-            if(!title || cards.length === 0) return alert("Title and at least one card required");
+    let error;
+    if (editingSetId) {
+        // Update existing
+        const result = await _supabase
+            .from('flashcard_sets')
+            .update({ title, cards })
+            .eq('id', editingSetId);
+        error = result.error;
+    } else {
+        // Insert new
+        const result = await _supabase
+            .from('flashcard_sets')
+            .insert([{ user_id: user.id, title, cards }]);
+        error = result.error;
+    }
 
-            const { error } = await _supabase.from('flashcard_sets').insert([{ user_id: user.id, title, cards }]);
-            if(!error) { 
-                closeModal(); 
-                loadSets(); 
-                // Reset fields
-                document.getElementById('set-title').value = '';
-                document.getElementById('cards-input-area').innerHTML = '<div style="display:flex; gap:5px; margin-bottom:10px;"><input type="text" placeholder="Question" class="q-in" style="flex:1; padding:8px;"><input type="text" placeholder="Answer" class="a-in" style="flex:1; padding:8px;"></div>';
-            } else { 
-                alert(error.message); 
-            }
-        }
+    if(!error) { 
+        editingSetId = null; // Reset
+        closeModal(); 
+        loadSets(); 
+        // Clear inputs...
+    } else { 
+        alert(error.message); 
+    }
+}
 
         async function deleteSet(setId) {
     if (!confirm("Are you sure you want to delete this set? This cannot be undone.")) return;
@@ -503,7 +535,16 @@
         function exitPlayer() { document.getElementById('creation-ui').style.display = 'block'; document.getElementById('player-ui').style.display = 'none'; }
         
         function openModal() { document.getElementById('createModal').style.display = 'flex'; }
-        function closeModal() { document.getElementById('createModal').style.display = 'none'; }
+        function closeModal() {
+    document.getElementById('createModal').style.display = 'none';
+    editingSetId = null;
+    document.getElementById('set-title').value = '';
+    document.getElementById('cards-input-area').innerHTML = `
+        <div style="display:flex; gap:5px; margin-bottom:10px;">
+            <input type="text" placeholder="Question" class="q-in" style="flex:1; padding:8px;">
+            <input type="text" placeholder="Answer" class="a-in" style="flex:1; padding:8px;">
+        </div>`;
+}
         
         function addNewInputRow() {
             const div = document.createElement('div'); 
