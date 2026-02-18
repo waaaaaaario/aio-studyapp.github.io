@@ -15,10 +15,9 @@
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-light); height: 100vh; overflow: hidden; }
-        
         .layout { display: flex; height: 100vh; }
         
-        /* --- Sidebar & Collapsible Logic --- */
+        /* Sidebar */
         .sidebar {
             width: 260px;
             background: linear-gradient(180deg, var(--primary-purple), var(--secondary-blue));
@@ -61,23 +60,18 @@
             align-items: center;
             justify-content: center;
         }
-
         .nav-item { 
             color: rgba(255,255,255,0.7); text-decoration: none; margin-bottom: 15px; 
             font-weight: 600; padding: 12px; border-radius: 8px; transition: 0.3s; cursor: pointer;
-            white-space: nowrap;
-            overflow: hidden;
         }
-        
         .sidebar.collapsed .nav-item {
             text-align: center;
             font-size: 1.2rem;
             padding: 12px 0;
         }
-
         .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.1); color: white; }
 
-        /* --- Main Content --- */
+        /* Main Content */
         .main-content { flex: 1; padding: 30px; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         .content-section { display: none; height: 100%; overflow: hidden;}
         .content-section.active { display: flex; flex-direction: column; }
@@ -100,64 +94,160 @@
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             box-shadow: 0 4px 15px rgba(0,0,0,0.05);
         }
-
         /* 3D Flashcard Styles */
-        .card-scene { width: 400px; height: 250px; perspective: 1000px; margin: 20px auto; cursor: pointer; }
-        .card-inner { width: 100%; height: 100%; position: relative; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); transform-style: preserve-3d; }
-        .card-inner.is-flipped { transform: rotateY(180deg); }
-        .card-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold; padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; }
-        .card-face-front { background: white; color: var(--primary-purple); border: 2px solid #eee; }
-        .card-face-back { background: linear-gradient(135deg, var(--primary-purple), var(--secondary-blue)); color: white; transform: rotateY(180deg); }
+        .card-scene {
+            width: 400px;
+            height: 250px;
+            perspective: 1000px; /* Essential for 3D effect */
+            margin: 20px auto;
+            cursor: pointer;
+        }
 
-        .plus-btn { background: var(--primary-purple); color: white; border: none; width: 60px; height: 60px; border-radius: 50%; font-size: 2rem; cursor: pointer; transition: 0.3s; }
+        .card-inner {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+
+        .card-inner.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden; /* Hides the back of the element when flipped */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .card-face-front {
+            background: white;
+            color: var(--primary-purple);
+            border: 2px solid #eee;
+        }
+
+        .card-face-back {
+            background: linear-gradient(135deg, var(--primary-purple), var(--secondary-blue));
+            color: white;
+            transform: rotateY(180deg); /* Pre-flip the back side */
+        }
+
+        .plus-btn {
+            background: var(--primary-purple);
+            color: white;
+            border: none;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
         .plus-btn:hover { transform: scale(1.1); }
 
-        /* Calendar Styles */
-        .calendar-card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); height: 100%; display: flex; flex-direction: column; }
-        .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-shrink: 0; }
-        .view-switcher button, .nav-btns button { padding: 8px 15px; border: 1px solid #ddd; background: white; cursor: pointer; border-radius: 6px; font-weight: 600; }
+        /* Calendar Card */
+        .calendar-card {
+            background: white; padding: 25px; border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); height: 100%;
+            display: flex; flex-direction: column;
+        }
+        .cal-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px; flex-shrink: 0;
+        }
+        .view-switcher button, .nav-btns button {
+            padding: 8px 15px; border: 1px solid #ddd; background: white;
+            cursor: pointer; border-radius: 6px; font-weight: 600;
+        }
         .view-switcher button.active { background: var(--accent-yellow); border-color: var(--accent-yellow); }
-        .calendar-grid { display: grid; gap: 10px; flex-grow: 1; width: 100%; }
+
+        .calendar-grid { 
+            display: grid; 
+            gap: 10px; 
+            flex-grow: 1; 
+            width: 100%;
+        }
+        
+        /* Grid states handled via JS class switching */
         .grid-month { grid-template-columns: repeat(7, 1fr); grid-template-rows: 30px repeat(6, 1fr); }
         .grid-week { grid-template-columns: repeat(7, 1fr); grid-template-rows: 1fr; }
         .grid-day { grid-template-columns: 1fr; grid-template-rows: 1fr; }
-        .day-box { border: 1px solid #f0f0f0; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; font-size: 1rem; background: #fff; padding: 10px 5px 5px 5px; height: 100%; }
+
+        .day-box {
+            border: 1px solid #f0f0f0;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;      /* Keeps text centered horizontally */
+            justify-content: flex-start; /* Pushes content to the TOP instead of center */
+            font-size: 1rem;
+            background: #fff;
+            padding: 10px 5px 5px 5px; /* Added more padding to the TOP (10px) */
+            height: 100%;             /* Ensures the box fills the grid cell */
+        }
         .day-header { font-weight: bold; color: #999; font-size: 0.85rem; text-transform: uppercase; display: flex; align-items: center; justify-content: center; }
         .today { background: #fff9e6; border: 2px solid var(--accent-yellow); color: #333; font-weight: bold; }
         .padding-day { opacity: 0.3; background: #fafafa; }
-
-        /* --- Modal & Card Scrolling Logic --- */
+        
+        /* Modal Styles */
         .modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;
         }
         .modal-content {
-            background: white; padding: 30px; border-radius: 20px; width: 600px;
-            max-height: 90vh; display: flex; flex-direction: column;
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            width: 600px;
+            /* This ensures the modal doesn't get cut off on small screens */
+            max-height: 95vh; 
+            display: flex;
+            flex-direction: column;
         }
+
         #cards-input-area {
-            max-height: 320px; /* Roughly 6 rows */
-            overflow-y: auto;
-            margin-bottom: 15px;
-            padding-right: 10px;
-            border-top: 1px solid #eee;
-            border-bottom: 1px solid #eee;
-            padding-top: 15px;
-        }
-        #cards-input-area::-webkit-scrollbar { width: 6px; }
-        #cards-input-area::-webkit-scrollbar-thumb { background-color: #ddd; border-radius: 10px; }
+    /* Each row is ~50px. 50px * 6 = 300px. 
+       Adjust this number to fit exactly 6 of your rows */
+    max-height: 320px; 
+    overflow-y: auto;
+    margin-bottom: 15px;
+    padding-right: 10px;
+    border-top: 1px solid #eee;
+    border-bottom: 1px solid #eee;
+    padding-top: 15px;
+}
+
+/* Optional: Make the scrollbar look cleaner */
+#cards-input-area::-webkit-scrollbar {
+    width: 6px;
+}
+#cards-input-area::-webkit-scrollbar-thumb {
+    background-color: #ddd;
+    border-radius: 10px;
+}
     </style>
 </head>
 <body>
 
     <div class="layout">
-        <nav class="sidebar" id="sidebar">
-            <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
-            <h2>STUDYAPP</h2>
-            <div id="nav-dashboard" class="nav-item active" onclick="showSection('dashboard')">🏠 <span>Dashboard</span></div>
-            <div id="nav-calendar" class="nav-item" onclick="showSection('calendar')">📅 <span>Calendar</span></div>
-            <div id="nav-flashcards" class="nav-item" onclick="showSection('flashcards')">🃏 <span>Flashcards</span></div>
-            <a href="index.html" class="nav-item logout-btn" style="margin-top: auto; color: #ffb3b3;">🚪 <span>Log Out</span></a>
+        <nav class="sidebar">
+            <h2><button class="toggle-btn" onclick="toggleSidebar()">STUDYAPP</button></h2>
+            <div id="nav-dashboard" class="nav-item active" onclick="showSection('dashboard')">🏠 Dashboard</div>
+            <div id="nav-calendar" class="nav-item" onclick="showSection('calendar')">📅 Calendar</div>
+            <div id="nav-flashcards" class="nav-item" onclick="showSection('flashcards')">🃏 Flashcards</div>
+            <a href="index.html" class="nav-item logout-btn" style="margin-top: auto; color: #ffb3b3;">🚪 Log Out</a>
         </nav>
 
         <main class="main-content">
@@ -195,10 +285,11 @@
                     <section class="studio-main">
                         <div id="creation-ui" style="text-align: center;">
                             <h2>Make a new set</h2>
-                            <button class="plus-btn" onclick="openModal()"> + </button>
+                            <button class="plus-btn" onclick="openModal()">  +  </button>
                         </div>
                         <div id="player-ui" style="display:none; text-align:center; width:100%;">
                             <h3 id="active-set-title" style="margin-bottom:20px;">Set Title</h3>
+    
                             <div class="card-scene" onclick="document.getElementById('card-inner').classList.toggle('is-flipped')">
                                 <div class="card-inner" id="card-inner">
                                     <div class="card-face card-face-front" id="f-front">Question</div>
@@ -210,8 +301,12 @@
                                 <span id="c-count" style="font-weight: bold; min-width: 60px;">1 / 1</span>
                                 <button onclick="nextC()" class="view-switcher button">Next</button>
                             </div>
-                            <button onclick="shuffleDeck()" class="view-switcher button" style="background: #eef2ff; width: 120px; margin-top:10px;">🔀 Shuffle</button>
-                            <button onclick="exitPlayer()" style="margin-top:20px; color:#999; border:none; background:none; cursor:pointer; font-weight:600; display:block; margin-left:auto; margin-right:auto;">Close Player</button>
+
+                            <div style="margin-top: 25px; display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                                <button onclick="shuffleDeck()" class="view-switcher button" style="background: #eef2ff; width: 120px;">🔀 Shuffle</button>
+                            </div>
+    
+                            <button onclick="exitPlayer()" style="margin-top:20px; color:#999; border:none; background:none; cursor:pointer; font-weight:600;">Close Player</button>
                         </div>
                     </section>
                 </div>
@@ -224,7 +319,8 @@
             <h3 id="modal-title">Create New Set</h3>
             <input type="text" id="set-title" placeholder="Set Title" style="width:100%; padding:10px; margin:15px 0; border-radius:8px; border:1px solid #ddd;">
             
-            <div id="cards-input-area"></div>
+            <div id="cards-input-area">
+                </div>
 
             <button onclick="addNewInputRow()" style="background:#eee; border:none; padding:10px; width:100%; cursor:pointer; margin-bottom:15px; border-radius: 8px; font-weight:600;">+ Add Another Card</button>
         
@@ -240,13 +336,15 @@
         let currentView = 'month';
         let activeDeck = []; 
         let cIdx = 0;
-        let editingSetId = null;
+        let editingSetId = null; // Keeps track of which set we are editing
 
-        const supabaseUrl = 'REPLACE_WITH_SUPABASE_URL'; 
-        const supabaseKey = 'REPLACE_WITH_SUPABASE_KEY';
+        // Replace these with your actual details from the Supabase dashboard
+        let supabaseUrl = 'REPLACE_WITH_SUPABASE_URL'; 
+        let supabaseKey = 'REPLACE_WITH_SUPABASE_KEY';
+
+        // This line uses those variables to create the connection
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-        /* --- UI HELPERS --- */
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('collapsed');
         }
@@ -257,24 +355,30 @@
             document.getElementById(id).classList.add('active');
             document.getElementById('nav-'+id).classList.add('active');
             if(id === 'calendar') render();
-            if(id === 'flashcards') loadSets();
+            if(id === 'flashcards') loadSets(); // Load data when clicking the tab
         }
 
         /* --- CALENDAR LOGIC --- */
         function changeView(v) {
-            currentView = v; nav = 0;
+            currentView = v; 
+            nav = 0; // Reset navigation when switching views
             document.querySelectorAll('.view-switcher button').forEach(b => b.classList.remove('active'));
             document.getElementById(v + 'Btn').classList.add('active');
             render();
         }
 
-        function changeDate(dir) { nav += dir; render(); }
+        function changeDate(dir) {
+            nav += dir;
+            render();
+        }
 
         function render() {
             const grid = document.getElementById('calGrid');
             grid.innerHTML = '';
             grid.className = `calendar-grid grid-${currentView}`;
+            
             const dt = new Date();
+            
             if (currentView === 'month') {
                 dt.setMonth(new Date().getMonth() + nav);
                 renderMonth(dt);
@@ -291,31 +395,55 @@
             const grid = document.getElementById('calGrid');
             const month = dt.getMonth();
             const year = dt.getFullYear();
+            
             document.getElementById('monthLabel').innerText = dt.toLocaleDateString('en-us', {month:'long', year:'numeric'});
+
             const firstDayOfMonth = new Date(year, month, 1).getDay();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            // Render Weekday Headers
             ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(day => {
-                const h = document.createElement('div'); h.className = 'day-header'; h.innerText = day; grid.appendChild(h);
+                const h = document.createElement('div');
+                h.className = 'day-header';
+                h.innerText = day;
+                grid.appendChild(h);
             });
+
+            // Padding days
             for(let i=0; i < firstDayOfMonth; i++) {
-                const p = document.createElement('div'); p.className = 'day-box padding-day'; grid.appendChild(p);
+                const p = document.createElement('div');
+                p.className = 'day-box padding-day';
+                grid.appendChild(p);
             }
+
+            // Days of the month
             for(let i=1; i <= daysInMonth; i++) {
-                const dayBox = document.createElement('div'); dayBox.className = 'day-box';
-                if(i === new Date().getDate() && dt.getMonth() === new Date().getMonth() && dt.getFullYear() === new Date().getFullYear()) dayBox.classList.add('today');
-                dayBox.innerText = i; grid.appendChild(dayBox);
+                const dayBox = document.createElement('div');
+                dayBox.className = 'day-box';
+                const isToday = i === new Date().getDate() && dt.getMonth() === new Date().getMonth() && dt.getFullYear() === new Date().getFullYear();
+                if(isToday) dayBox.classList.add('today');
+                dayBox.innerText = i;
+                grid.appendChild(dayBox);
             }
         }
 
         function renderWeek(dt) {
             const grid = document.getElementById('calGrid');
-            const startOfWeek = new Date(dt); startOfWeek.setDate(dt.getDate() - dt.getDay());
+            const startOfWeek = new Date(dt);
+            startOfWeek.setDate(dt.getDate() - dt.getDay());
+            
             document.getElementById('monthLabel').innerText = `Week of ${startOfWeek.toLocaleDateString('en-us', {month:'short', day:'numeric'})}`;
+            
             for(let i=0; i<7; i++) {
-                const day = new Date(startOfWeek); day.setDate(startOfWeek.getDate() + i);
-                const dayBox = document.createElement('div'); dayBox.className = 'day-box';
+                const day = new Date(startOfWeek);
+                day.setDate(startOfWeek.getDate() + i);
+                
+                const dayBox = document.createElement('div');
+                dayBox.className = 'day-box';
                 if(day.toDateString() === new Date().toDateString()) dayBox.classList.add('today');
-                dayBox.innerHTML = `<span style="font-size:0.8rem; color:#999; font-weight:bold">${day.toLocaleDateString('en-us',{weekday:'short'})}</span><span style="font-size:1.8rem">${day.getDate()}</span>`;
+                
+                dayBox.innerHTML = `<span style="font-size:0.8rem; color:#999; font-weight:bold">${day.toLocaleDateString('en-us',{weekday:'short'})}</span>
+                                    <span style="font-size:1.8rem">${day.getDate()}</span>`;
                 grid.appendChild(dayBox);
             }
         }
@@ -323,30 +451,47 @@
         function renderDay(dt) {
             const grid = document.getElementById('calGrid');
             document.getElementById('monthLabel').innerText = dt.toLocaleDateString('en-us', {weekday:'long', month:'long', day:'numeric'});
-            const dayBox = document.createElement('div'); dayBox.className = 'day-box';
-            dayBox.innerHTML = `<span style="font-size:4rem">${dt.getDate()}</span><span style="color:#666">${dt.toLocaleDateString('en-us', {month: 'long'})}</span>`;
+            
+            const dayBox = document.createElement('div');
+            dayBox.className = 'day-box';
+            dayBox.innerHTML = `<span style="font-size:4rem">${dt.getDate()}</span>
+                                <span style="color:#666">${dt.toLocaleDateString('en-us', {month: 'long'})}</span>`;
             if(dt.toDateString() === new Date().toDateString()) dayBox.classList.add('today');
+            
             grid.appendChild(dayBox);
         }
-
-        /* --- FLASHCARD LOGIC --- */
+        // --- FLASHCARD LOGIC ---
+       // --- FLASHCARD LOGIC ---
         async function loadSets() {
             const { data: { user } } = await _supabase.auth.getUser();
             if (!user) return;
-            const { data, error } = await _supabase.from('flashcard_sets').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
-            if (error) return console.error(error);
+
+            const { data, error } = await _supabase
+                .from('flashcard_sets')
+                .select('*')
+                .eq('user_id', user.id)
+                .order('created_at', { ascending: false });
+
+            if (error) return console.error("Error:", error);
+
             const list = document.getElementById('saved-sets-list');
-            list.innerHTML = data.length === 0 ? '<p style="color:#999; padding:10px;">No sets found.</p>' : 
-                data.map(set => `
-                <div class="set-item">
+            if (data.length === 0) {
+                list.innerHTML = '<p style="color:#999; padding:10px;">No sets found.</p>';
+                return;
+            }
+
+            list.innerHTML = data.map(set => `
+                <div class="set-item" style="position:relative;">
                     <div onclick='startPlaying(${JSON.stringify(set.cards).replace(/'/g, "&apos;")}, "${set.title}")'>
-                        <h4>${set.title}</h4><span>${set.cards.length} cards</span>
+                        <h4>${set.title}</h4>
+                        <span>${set.cards.length} cards</span>
                     </div>
                     <div style="margin-top:10px; display:flex; gap:10px;">
                         <button onclick='editSet(${JSON.stringify(set).replace(/'/g, "&apos;")})' style="font-size:0.8rem; cursor:pointer; background:none; border:1px solid #ddd; border-radius:4px; padding:2px 8px;">Edit</button>
                         <button onclick='deleteSet("${set.id}")' style="font-size:0.8rem; cursor:pointer; background:none; border:1px solid #ffb3b3; color:red; border-radius:4px; padding:2px 8px;">Delete</button>
                     </div>
-                </div>`).join('');
+                </div>
+            `).join('');
         }
 
         function editSet(set) {
@@ -354,25 +499,52 @@
             document.getElementById('set-title').value = set.title;
             const container = document.getElementById('cards-input-area');
             container.innerHTML = ''; 
-            set.cards.forEach(card => addNewInputRow(card.q, card.a));
+            set.cards.forEach(card => {
+                addNewInputRow(card.q, card.a);
+            });
             openModal();
         }
 
         async function saveSet() {
             const { data: { user } } = await _supabase.auth.getUser();
             const title = document.getElementById('set-title').value;
-            const qs = document.querySelectorAll('.q-in'), as = document.querySelectorAll('.a-in'), cards = [];
-            qs.forEach((q, i) => { if(q.value.trim()) cards.push({q: q.value, a: as[i].value}); });
+            const qs = document.querySelectorAll('.q-in');
+            const as = document.querySelectorAll('.a-in');
+            const cards = [];
+            
+            qs.forEach((q, i) => { 
+                if(q.value.trim()) cards.push({q: q.value, a: as[i].value}); 
+            });
+
             if(!title || cards.length === 0) return alert("Title and cards required");
-            const payload = { user_id: user.id, title, cards };
-            const { error } = editingSetId ? await _supabase.from('flashcard_sets').update({ title, cards }).eq('id', editingSetId) : await _supabase.from('flashcard_sets').insert([payload]);
-            if(!error) { editingSetId = null; closeModal(); loadSets(); } else alert(error.message);
+
+            let error;
+            if (editingSetId) {
+                const result = await _supabase.from('flashcard_sets').update({ title, cards }).eq('id', editingSetId);
+                error = result.error;
+            } else {
+                const result = await _supabase.from('flashcard_sets').insert([{ user_id: user.id, title, cards }]);
+                error = result.error;
+            }
+
+            if(!error) { 
+                editingSetId = null;
+                closeModal(); 
+                loadSets(); 
+            } else { 
+                alert(error.message); 
+            }
         }
 
-        async function deleteSet(setId) { if (confirm("Delete this set?")) { await _supabase.from('flashcard_sets').delete().eq('id', setId); loadSets(); } }
+        async function deleteSet(setId) {
+            if (!confirm("Are you sure you want to delete this set?")) return;
+            const { error } = await _supabase.from('flashcard_sets').delete().eq('id', setId);
+            if (!error) loadSets();
+        }
 
         function startPlaying(cards, title) {
-            activeDeck = cards; cIdx = 0;
+            activeDeck = cards; 
+            cIdx = 0;
             document.getElementById('creation-ui').style.display = 'none';
             document.getElementById('player-ui').style.display = 'block';
             document.getElementById('active-set-title').innerText = title;
@@ -385,7 +557,13 @@
                 const j = Math.floor(Math.random() * (i + 1));
                 [activeDeck[i], activeDeck[j]] = [activeDeck[j], activeDeck[i]];
             }
-            cIdx = 0; updateCardDisplay();
+            cIdx = 0;
+            const card = document.getElementById('card-inner');
+            card.style.transform = "scale(0.8)";
+            setTimeout(() => {
+                updateCardDisplay();
+                card.style.transform = ""; 
+            }, 200);
         }
 
         function updateCardDisplay() {
@@ -395,11 +573,25 @@
             document.getElementById('c-count').innerText = `${cIdx + 1} / ${activeDeck.length}`;
         }
 
-        function nextC() { cIdx = (cIdx + 1) % activeDeck.length; updateCardDisplay(); }
-        function prevC() { cIdx = (cIdx - 1 + activeDeck.length) % activeDeck.length; updateCardDisplay(); }
-        function exitPlayer() { document.getElementById('creation-ui').style.display = 'block'; document.getElementById('player-ui').style.display = 'none'; }
+        function nextC() { 
+            if(!activeDeck.length) return;
+            cIdx = (cIdx + 1) % activeDeck.length; 
+            updateCardDisplay(); 
+        }
+
+        function prevC() { 
+            if(!activeDeck.length) return;
+            cIdx = (cIdx - 1 + activeDeck.length) % activeDeck.length; 
+            updateCardDisplay(); 
+        }
+
+        function exitPlayer() { 
+            document.getElementById('creation-ui').style.display = 'block'; 
+            document.getElementById('player-ui').style.display = 'none'; 
+        }
         
         function openModal() { document.getElementById('createModal').style.display = 'flex'; }
+        
         function closeModal() {
             document.getElementById('createModal').style.display = 'none';
             editingSetId = null;
@@ -409,21 +601,30 @@
         }
         
         function addNewInputRow(q = '', a = '') {
-            const container = document.getElementById('cards-input-area');
-            const div = document.createElement('div');
-            div.className = "card-input-row";
-            div.style.display = 'flex'; div.style.gap = '5px'; div.style.marginBottom = '10px'; div.style.alignItems = 'center';
-            div.innerHTML = `
-                <input type="text" placeholder="Question" class="q-in" value="${q}" style="flex:1; padding:8px; border-radius:6px; border:1px solid #ddd;">
-                <input type="text" placeholder="Answer" class="a-in" value="${a}" style="flex:1; padding:8px; border-radius:6px; border:1px solid #ddd;">
-                <button onclick="if(document.querySelectorAll('.card-input-row').length > 1) { this.parentElement.remove() } else { alert('Set must have at least one card!') }" 
-                style="background:none; border:none; color:#ff4d4d; cursor:pointer; font-size:1.2rem; padding: 0 5px;">×</button>`;
-            container.appendChild(div);
-            container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
-        }
+    const container = document.getElementById('cards-input-area');
+    const div = document.createElement('div');
+    div.className = "card-input-row";
+    div.style.display = 'flex';
+    div.style.gap = '5px';
+    div.style.marginBottom = '10px';
+    div.style.alignItems = 'center';
 
+    div.innerHTML = `
+        <input type="text" placeholder="Question" class="q-in" value="${q}" style="flex:1; padding:8px;">
+        <input type="text" placeholder="Answer" class="a-in" value="${a}" style="flex:1; padding:8px;">
+        <button onclick="if(document.querySelectorAll('.card-input-row').length > 1) { this.parentElement.remove() } else { alert('Set must have at least one card!') }" 
+        style="background:none; border:none; color:#ff4d4d; cursor:pointer; font-size:1.2rem; padding: 0 5px;">×</button>
+    `;
+    
+    container.appendChild(div);
+
+    // AUTO-SCROLL: Keep the newest row in view
+    container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+}
+
+        // Initialize
         render();
-        addNewInputRow();
+        addNewInputRow(); // Initialize the first row for the modal
     </script>
 </body>
 </html>
