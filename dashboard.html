@@ -231,6 +231,12 @@
                                 <span id="c-count" style="font-weight: bold; min-width: 60px;">1 / 1</span>
                                 <button onclick="nextC()" class="view-switcher button">Next</button>
                             </div>
+                            <div style="display:flex; gap:15px; justify-content:center; align-items:center; margin-top: 20px;">
+                                <button onclick="prevC()" class="view-switcher button">Prev</button>
+                                <button onclick="shuffleDeck()" class="view-switcher button" style="background: #eef2ff;">🔀 Shuffle</button>
+                                <span id="c-count" style="font-weight: bold; min-width: 60px;">1 / 1</span>
+                                <button onclick="nextC()" class="view-switcher button">Next</button>
+                            </div>
     
                             <button onclick="exitPlayer()" style="margin-top:20px; color:#999; border:none; background:none; cursor:pointer; font-weight:600;">Close Player</button>
                         </div>
@@ -449,6 +455,28 @@
             document.getElementById('player-ui').style.display = 'block';
             document.getElementById('active-set-title').innerText = title;
             updateCardDisplay();
+        }
+
+        function shuffleDeck() {
+            if (activeDeck.length < 2) return;
+
+            // Fisher-Yates Shuffle Algorithm
+            for (let i = activeDeck.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [activeDeck[i], activeDeck[j]] = [activeDeck[j], activeDeck[i]];
+            }
+
+            // Reset to the first card of the new shuffled order
+            cIdx = 0;
+    
+            // Visual feedback: briefly shrink the card to show it's being shuffled
+            const card = document.getElementById('card-inner');
+            card.style.transform = "scale(0.8)";
+    
+            setTimeout(() => {
+                updateCardDisplay();
+                card.style.transform = ""; // Reset scale
+            }, 200);
         }
 
         function updateCardDisplay() {
