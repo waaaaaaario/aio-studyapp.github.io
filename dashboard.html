@@ -372,8 +372,22 @@
                             <h3 id="quiz-player-title"></h3>
                             <div id="question-container" style="background:#f9f9f9; padding:30px; border-radius:15px; margin:20px 0;">
                                 </div>
-                            <button onclick="submitAnswer()" class="view-switcher button" style="background:var(--primary-purple); color:white; width:100%;">Check Answer</button>
-                          </div>
+                                    <div id="quiz-controls" style="margin-top: 20px;">
+    
+                        <button id="submit-btn" onclick="submitAnswer()" class="view-switcher button" 
+            style="background:var(--primary-purple); color:white; width:100%; padding: 15px; border-radius: 10px;">
+        Check Answer
+    </button>
+
+    <div id="feedback-group" style="display:none;">
+        <div id="quiz-feedback" style="padding:15px; border-radius:10px; margin-bottom:10px; font-weight:bold; text-align:center;">
+            </div>
+        <button id="next-btn" onclick="nextQuestion()" class="view-switcher button" 
+                style="background:var(--secondary-blue); color:white; width:100%; padding: 15px; border-radius: 10px;">
+            Next Question →
+        </button>
+    </div>
+</div>                          </div>
                     </section>
                 </div>
             </div>
@@ -738,37 +752,64 @@
 
 function submitAnswer() {
     const q = activeQuiz.questions[currentQuestionIndex];
+    const feedback = document.getElementById('quiz-feedback');
+    const submitBtn = document.getElementById('submit-btn');
+    const feedbackGroup = document.getElementById('feedback-group');
+    
     let userAnswer = "";
     let isCorrect = false;
 
+    // 1. Validation Logic
     if (q.type === 'multiple-choice') {
         const selected = document.querySelector('input[name="quiz-opt"]:checked');
-        if (!selected) return alert("Please select an answer!");
+        if (!selected) return; // Optional: add a subtle shake animation here
         userAnswer = selected.value;
         isCorrect = (userAnswer === q.answer);
     } else {
         userAnswer = document.getElementById('quiz-text-input').value.trim();
-        // Check if the answer exists in the array of correct options (case insensitive)
+        if (!userAnswer) return;
         isCorrect = q.answer.some(a => a.toLowerCase() === userAnswer.toLowerCase());
     }
 
+    // 2. Set Feedback Content
     if (isCorrect) {
-        alert("🎉 Correct!");
-        nextQuestion();
+        feedback.innerText = "✨ Correct!";
+        feedback.className = 'feedback-correct';
     } else {
-        alert(`❌ Incorrect. The correct answer was: ${q.type === 'multiple-choice' ? q.answer : q.answer.join(", ")}`);
-        nextQuestion();
+        const correctDisplay = q.type === 'multiple-choice' ? q.answer : q.answer.join(", ");
+        feedback.innerText = `❌ Incorrect (Ans: ${correctDisplay})`;
+        feedback.className = 'feedback-incorrect';
     }
+
+    // 3. THE SWAP: Hide Submit, Show Feedback/Next
+    submitBtn.style.display = 'none';
+    feedbackGroup.style.display = 'block';
 }
 
 function nextQuestion() {
     currentQuestionIndex++;
+    
+    // Reset UI for the next question
+    document.getElementById('submit-btn').style.display = 'block';
+    document.getElementById('feedback-group').style.display = 'none';
+
     if (currentQuestionIndex < activeQuiz.questions.length) {
         renderQuestion(currentQuestionIndex);
     } else {
-        alert("Quiz Finished!");
-        document.getElementById('quiz-creation-ui').style.display = 'block';
-        document.getElementById('quiz-player-ui').style.display = 'none';
+        // Handle Quiz Completion
+        const container = document.getElementById('question-container');
+        container.innerHTML = `<div style="text-align:center;"><h2>Quiz Complete! 🎉</h2><p>You've finished all questions.</p></div>`;
+        document.getElementById('submit-btn').style.display = 'none';
+        document.getElementById('next-btn').innerText = "Return to Menu";
+        document.getElementById('next-btn').onclick = () => {
+            document.getElementById('quiz-creation-ui').style.display = 'block';
+            document.getElementById('quiz-player-ui').style.display = 'none';
+            // Reset the button for the next time a quiz is opened
+            document.getElementById('next-btn').onclick = nextQuestion;
+            document.getElementById('next-btn').innerText = "Next Question →";
+        };
+        document.getElementById('feedback-group').style.display = 'block';
+        document.getElementById('quiz-feedback').style.display = 'none';
     }
 }
         
