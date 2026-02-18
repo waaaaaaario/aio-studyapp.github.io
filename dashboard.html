@@ -275,6 +275,9 @@
             <div id="nav-flashcards" class="nav-item" onclick="showSection('flashcards')">
                 <div class="icon">🃏</div> <span>Flashcards</span>
             </div>
+            <div id="nav-quizzes" class="nav-item" onclick="showSection('quizzes')">
+                <div class="icon">📝</div> <span>Quizzes</span>
+            </div>
             <a href="index.html" class="nav-item logout-btn" style="margin-top: auto; color: #ffb3b3; text-decoration: none;">
                 <div class="icon">🚪</div> <span>Log Out</span>
             </a>
@@ -343,7 +346,29 @@
             </div>
         </main>
     </div>
-
+<div id="quizzes" class="content-section">
+    <div class="flashcard-studio">
+        <aside class="sets-sidebar">
+            <h3>Your Quizzes</h3>
+            <div class="sets-list" id="quiz-sets-list">
+                </div>
+        </aside>
+        
+        <section class="studio-main">
+            <div id="quiz-creation-ui" style="text-align: center;">
+                <h2>Create a Quiz</h2>
+                <button class="plus-btn" onclick="openQuizModal()"> + </button>
+            </div>
+            
+            <div id="quiz-player-ui" style="display:none; width:100%; max-width:600px;">
+                <h3 id="quiz-player-title"></h3>
+                <div id="question-container" style="background:#f9f9f9; padding:30px; border-radius:15px; margin:20px 0;">
+                    </div>
+                <button onclick="submitAnswer()" class="view-switcher button" style="background:var(--primary-purple); color:white; width:100%;">Check Answer</button>
+            </div>
+        </section>
+    </div>
+</div>
     <div id="createModal" class="modal">
         <div class="modal-content">
             <h3 id="modal-title">Create New Set</h3>
@@ -360,7 +385,25 @@
             </div>
         </div>
     </div>
+<div id="quizModal" class="modal">
+    <div class="modal-content" style="width: 700px;">
+        <h3>New Quiz</h3>
+        <input type="text" id="quiz-set-title" placeholder="Quiz Title" style="width:100%; padding:10px; margin:10px 0; border-radius:8px; border:1px solid #ddd;">
+        
+        <div id="quiz-questions-area" style="max-height: 400px; overflow-y: auto;">
+            </div>
 
+        <div style="display:flex; gap:10px; margin: 15px 0;">
+            <button onclick="addQuestionRow('multiple-choice')" style="flex:1; padding:10px; cursor:pointer;">+ Multiple Choice</button>
+            <button onclick="addQuestionRow('text')" style="flex:1; padding:10px; cursor:pointer;">+ Text Answer</button>
+        </div>
+
+        <div style="display:flex; gap:10px;">
+            <button onclick="saveQuiz()" style="flex:1; background:var(--primary-purple); color:white; border:none; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer;">Save Quiz</button>
+            <button onclick="closeQuizModal()" style="flex:1; background:#ccc; border:none; padding:12px; border-radius:8px; cursor:pointer;">Cancel</button>
+        </div>
+    </div>
+</div>
     <script>
         let nav = 0; 
         let currentView = 'month';
@@ -651,6 +694,51 @@
 
     // AUTO-SCROLL: Keep the newest row in view
     container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+}
+        function addQuestionRow(type) {
+    const container = document.getElementById('quiz-questions-area');
+    const div = document.createElement('div');
+    div.className = "quiz-question-item";
+    div.dataset.type = type;
+    div.style = "border-bottom: 1px solid #eee; padding: 15px 0;";
+
+    if (type === 'multiple-choice') {
+        div.innerHTML = `
+            <input type="text" placeholder="Question" class="q-text" style="width:100%; margin-bottom:5px;">
+            <div class="options-area">
+                <input type="text" placeholder="Option 1 (Correct)" class="opt-correct" style="width:100%; border-color:green;">
+                <input type="text" placeholder="Option 2" class="opt" style="width:100%;">
+            </div>
+            <button onclick="this.parentElement.querySelector('.options-area').insertAdjacentHTML('beforeend', '<input type=\\'text\\' class=\\'opt\\' style=\\'width:100%\\' placeholder=\\'Extra Option\\'>')">+ Add Option</button>
+        `;
+    } else {
+        div.innerHTML = `
+            <input type="text" placeholder="Question" class="q-text" style="width:100%; margin-bottom:5px;">
+            <input type="text" placeholder="Accepted Answers (comma separated)" class="q-answers" style="width:100%;">
+            <small>Example: Red, Blue, Green</small>
+        `;
+    }
+    container.appendChild(div);
+}
+
+function renderQuestion(index) {
+    const q = activeQuiz.questions[index];
+    const container = document.getElementById('question-container');
+    container.innerHTML = `<h4>${q.question}</h4>`;
+
+    if (q.type === 'multiple-choice') {
+        // Shuffle options so correct isn't always first
+        const shuffled = [...q.options].sort(() => Math.random() - 0.5);
+        shuffled.forEach(opt => {
+            container.innerHTML += `
+                <label style="display:block; margin:10px 0; padding:10px; border:1px solid #ddd; border-radius:8px; cursor:pointer;">
+                    <input type="radio" name="quiz-opt" value="${opt}"> ${opt}
+                </label>
+            `;
+        });
+    } else {
+        container.innerHTML += `<input type="text" id="quiz-text-input" style="width:100%; padding:10px; margin-top:10px;" placeholder="Type your answer...">`;
+    }
 }
 
         // Initialize
