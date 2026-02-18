@@ -70,49 +70,66 @@
         }
         .card-face-back { background: var(--accent-yellow); transform: rotateY(180deg); }
 
-        /* Calendar Card */
-        .calendar-card {
-            background: white; padding: 25px; border-radius: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05); height: 100%;
-            display: flex; flex-direction: column;
-        }
-        .cal-header {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 20px; flex-shrink: 0;
-        }
-        .view-switcher button, .nav-btns button {
-            padding: 8px 15px; border: 1px solid #ddd; background: white;
-            cursor: pointer; border-radius: 6px; font-weight: 600;
-        }
-        .view-switcher button.active { background: var(--accent-yellow); border-color: var(--accent-yellow); }
-
+            /* Update these specific parts in your <style> tag */
         .calendar-grid { 
             display: grid; 
             gap: 10px; 
-            flex-grow: 1; 
+            flex: 1; /* This makes it fill the available space */
             width: 100%;
+            min-height: 0; 
         }
-        
-        /* Grid states handled via JS class switching */
-        .grid-month { grid-template-columns: repeat(7, 1fr); grid-template-rows: 30px repeat(6, 1fr); }
-        .grid-week { grid-template-columns: repeat(7, 1fr); grid-template-rows: 1fr; }
-        .grid-day { grid-template-columns: 1fr; grid-template-rows: 1fr; }
+
+        /* Precise grid definitions */
+        .grid-month { 
+            grid-template-columns: repeat(7, 1fr); 
+            grid-template-rows: 30px repeat(5, 1fr); 
+        }
+        .grid-week { 
+            grid-template-columns: repeat(7, 1fr); 
+            grid-template-rows: 1fr; 
+        }
+        .grid-day { 
+            grid-template-columns: 1fr; 
+            grid-template-rows: 1fr; 
+        }
 
         .day-box {
             border: 1px solid #f0f0f0;
-            border-radius: 8px;
+            border-radius: 12px;
             display: flex;
             flex-direction: column;
-            align-items: center;      /* Keeps text centered horizontally */
-            justify-content: flex-start; /* Pushes content to the TOP instead of center */
-            font-size: 1rem;
+            align-items: center;
+            justify-content: flex-start;
             background: #fff;
-            padding: 10px 5px 5px 5px; /* Added more padding to the TOP (10px) */
-            height: 100%;             /* Ensures the box fills the grid cell */
+            padding: 10px 5px;
+            transition: transform 0.2s;
         }
-        .day-header { font-weight: bold; color: #999; font-size: 0.85rem; text-transform: uppercase; display: flex; align-items: center; justify-content: center; }
-        .today { background: #fff9e6; border: 2px solid var(--accent-yellow); color: #333; font-weight: bold; }
-        .padding-day { opacity: 0.3; background: #fafafa; }
+        
+        .day-box:hover {
+            background: #fafafa;
+        }
+
+        .today { 
+            background: #fff9e6; 
+            border: 2px solid var(--accent-yellow); 
+            color: #333; 
+            font-weight: bold; 
+        }
+
+        .padding-day { 
+            opacity: 0.3; 
+            background: #fdfdfd; 
+        }
+
+        .day-header { 
+            font-weight: bold; 
+            color: #bbb; 
+            font-size: 0.75rem; 
+            text-transform: uppercase; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+        }
         
         /* Modal Styles */
         .modal {
@@ -305,88 +322,123 @@
             document.getElementById('cards-input-area').appendChild(div);
         }
 
-        /* --- CALENDAR LOGIC (Simplified & Working) --- */
-        function changeView(v) {
-            currentView = v; nav = 0;
-            document.querySelectorAll('.view-switcher button').forEach(b => b.classList.remove('active'));
-            document.getElementById(v + 'Btn').classList.add('active');
-            render();
-        }
+        /* --- CALENDAR LOGIC --- */
+let nav = 0; 
+let currentView = 'month';
 
-        function changeDate(dir) { nav += dir; render(); }
+function changeView(v) {
+    currentView = v; 
+    nav = 0;
+    document.querySelectorAll('.view-switcher button').forEach(b => b.classList.remove('active'));
+    document.getElementById(v + 'Btn').classList.add('active');
+    render();
+}
 
-        function render() {
-            const grid = document.getElementById('calGrid');
-            grid.innerHTML = '';
-            grid.className = `calendar-grid grid-${currentView}`;
-            const dt = new Date();
-            if (currentView === 'month') {
-                dt.setMonth(new Date().getMonth() + nav);
-                renderMonth(dt);
-            } else if (currentView === 'week') {
-                dt.setDate(new Date().getDate() + (nav * 7));
-                renderWeek(dt);
-            } else {
-                dt.setDate(new Date().getDate() + nav);
-                renderDay(dt);
-            }
-        }
+function changeDate(dir) {
+    nav += dir;
+    render();
+}
 
-        function renderMonth(dt) {
-            const grid = document.getElementById('calGrid');
-            const month = dt.getMonth();
-            const year = dt.getFullYear();
-            document.getElementById('monthLabel').innerText = dt.toLocaleDateString('en-us', {month:'long', year:'numeric'});
-            const firstDay = new Date(year, month, 1).getDay();
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
+function render() {
+    const grid = document.getElementById('calGrid');
+    grid.innerHTML = '';
+    grid.className = `calendar-grid grid-${currentView}`;
+    
+    const dt = new Date();
+    
+    if (currentView === 'month') {
+        dt.setMonth(new Date().getMonth() + nav);
+        renderMonth(dt);
+    } else if (currentView === 'week') {
+        dt.setDate(new Date().getDate() + (nav * 7));
+        renderWeek(dt);
+    } else {
+        dt.setDate(new Date().getDate() + nav);
+        renderDay(dt);
+    }
+}
 
-            ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(day => {
-                const h = document.createElement('div'); h.className = 'day-header'; h.innerText = day;
-                grid.appendChild(h);
-            });
+function renderMonth(dt) {
+    const grid = document.getElementById('calGrid');
+    const month = dt.getMonth();
+    const year = dt.getFullYear();
+    
+    document.getElementById('monthLabel').innerText = dt.toLocaleDateString('en-us', {month:'long', year:'numeric'});
 
-            for(let i=0; i < firstDay; i++) {
-                const p = document.createElement('div'); p.className = 'day-box padding-day';
-                grid.appendChild(p);
-            }
+    const firstDayOfMonth = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-            for(let i=1; i <= daysInMonth; i++) {
-                const dayBox = document.createElement('div');
-                dayBox.className = 'day-box';
-                const isToday = i === new Date().getDate() && dt.getMonth() === new Date().getMonth() && dt.getFullYear() === new Date().getFullYear();
-                if(isToday) dayBox.classList.add('today');
-                dayBox.innerText = i;
-                grid.appendChild(dayBox);
-            }
-        }
+    // Headers
+    ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(day => {
+        const h = document.createElement('div');
+        h.className = 'day-header';
+        h.innerText = day;
+        grid.appendChild(h);
+    });
 
-        function renderWeek(dt) {
-            const grid = document.getElementById('calGrid');
-            const start = new Date(dt);
-            start.setDate(dt.getDate() - dt.getDay());
-            document.getElementById('monthLabel').innerText = `Week of ${start.toLocaleDateString('en-us', {month:'short', day:'numeric'})}`;
-            for(let i=0; i<7; i++) {
-                const d = new Date(start); d.setDate(start.getDate() + i);
-                const dayBox = document.createElement('div');
-                dayBox.className = 'day-box';
-                if(d.toDateString() === new Date().toDateString()) dayBox.classList.add('today');
-                dayBox.innerHTML = `<span style="font-size:0.8rem; color:#999;">${d.toLocaleDateString('en-us',{weekday:'short'})}</span><span style="font-size:1.5rem">${d.getDate()}</span>`;
-                grid.appendChild(dayBox);
-            }
-        }
+    // Padding
+    for(let i=0; i < firstDayOfMonth; i++) {
+        const p = document.createElement('div');
+        p.className = 'day-box padding-day';
+        grid.appendChild(p);
+    }
 
-        function renderDay(dt) {
-            const grid = document.getElementById('calGrid');
-            document.getElementById('monthLabel').innerText = dt.toLocaleDateString('en-us', {weekday:'long', month:'long', day:'numeric'});
-            const dayBox = document.createElement('div');
-            dayBox.className = 'day-box';
-            dayBox.innerHTML = `<span style="font-size:3rem">${dt.getDate()}</span><span style="color:#666">${dt.toLocaleDateString('en-us', {month: 'long'})}</span>`;
-            if(dt.toDateString() === new Date().toDateString()) dayBox.classList.add('today');
-            grid.appendChild(dayBox);
-        }
+    // Days
+    for(let i=1; i <= daysInMonth; i++) {
+        const dayBox = document.createElement('div');
+        dayBox.className = 'day-box';
+        const isToday = i === new Date().getDate() && 
+                        dt.getMonth() === new Date().getMonth() && 
+                        dt.getFullYear() === new Date().getFullYear();
+        
+        if(isToday) dayBox.classList.add('today');
+        dayBox.innerHTML = `<span style="font-size: 1.1rem;">${i}</span>`;
+        grid.appendChild(dayBox);
+    }
+}
 
-        // Init
-        render();
+function renderWeek(dt) {
+    const grid = document.getElementById('calGrid');
+    const startOfWeek = new Date(dt);
+    startOfWeek.setDate(dt.getDate() - dt.getDay());
+    
+    document.getElementById('monthLabel').innerText = `Week of ${startOfWeek.toLocaleDateString('en-us', {month:'short', day:'numeric'})}`;
+    
+    for(let i=0; i<7; i++) {
+        const day = new Date(startOfWeek);
+        day.setDate(startOfWeek.getDate() + i);
+        
+        const dayBox = document.createElement('div');
+        dayBox.className = 'day-box';
+        if(day.toDateString() === new Date().toDateString()) dayBox.classList.add('today');
+        
+        dayBox.innerHTML = `
+            <span style="font-size:0.8rem; color:#999; font-weight:bold; margin-bottom: 10px;">${day.toLocaleDateString('en-us',{weekday:'short'})}</span>
+            <span style="font-size:2rem; font-weight:600;">${day.getDate()}</span>
+        `;
+        grid.appendChild(dayBox);
+    }
+}
+
+function renderDay(dt) {
+    const grid = document.getElementById('calGrid');
+    document.getElementById('monthLabel').innerText = dt.toLocaleDateString('en-us', {weekday:'long', month:'long', day:'numeric'});
+    
+    const dayBox = document.createElement('div');
+    dayBox.className = 'day-box';
+    dayBox.style.justifyContent = 'center';
+    
+    dayBox.innerHTML = `
+        <span style="font-size:5rem; font-weight:bold; color:var(--primary-purple);">${dt.getDate()}</span>
+        <span style="font-size:1.5rem; color:#666;">${dt.toLocaleDateString('en-us', {month: 'long'})}</span>
+    `;
+    if(dt.toDateString() === new Date().toDateString()) dayBox.classList.add('today');
+    
+    grid.appendChild(dayBox);
+}
+
+// Ensure it renders on start
+window.onload = () => { render(); };
     </script>
 </body>
 </html>
