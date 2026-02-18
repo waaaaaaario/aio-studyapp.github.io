@@ -253,7 +253,7 @@
                     <input type="text" placeholder="Answer" class="a-in" style="flex:1; padding:8px;">
                 </div>
             </div>
-            <button onclick="addNewInputRow()" style="background:#eee; border:none; padding:8px; width:100%; cursor:pointer; margin-bottom:15px;">+ Add Another Card</button>
+            <<button onclick="addNewInputRow()" style="background:#eee; border:none; padding:8px; width:100%; cursor:pointer; margin-bottom:15px; border-radius: 8px;">+ Add Another Card</button>
             <div style="display:flex; gap:10px;">
                 <button onclick="saveSet()" style="flex:1; background:var(--primary-purple); color:white; border:none; padding:12px; border-radius:8px; cursor:pointer;">Save Set</button>
                 <button onclick="closeModal()" style="flex:1; background:#ccc; border:none; padding:12px; border-radius:8px; cursor:pointer;">Cancel</button>
@@ -419,25 +419,19 @@
     `).join('');
 }
         function editSet(set) {
-    editingSetId = set.id; // Store the ID so we know we're editing
+    editingSetId = set.id;
     document.getElementById('set-title').value = set.title;
     
     const container = document.getElementById('cards-input-area');
-    container.innerHTML = ''; // Clear existing rows
+    container.innerHTML = ''; // Clear the default blank row
 
+    // Populate with existing cards
     set.cards.forEach(card => {
-        const div = document.createElement('div');
-        div.style.display='flex'; div.style.gap='5px'; div.style.marginBottom='10px';
-        div.innerHTML = `
-            <input type="text" value="${card.q}" class="q-in" style="flex:1; padding:8px;">
-            <input type="text" value="${card.a}" class="a-in" style="flex:1; padding:8px;">
-        `;
-        container.appendChild(div);
+        addNewInputRow(card.q, card.a);
     });
 
     openModal();
 }
-
         async function saveSet() {
     const { data: { user } } = await _supabase.auth.getUser();
     const title = document.getElementById('set-title').value;
@@ -539,19 +533,27 @@
     document.getElementById('createModal').style.display = 'none';
     editingSetId = null;
     document.getElementById('set-title').value = '';
-    document.getElementById('cards-input-area').innerHTML = `
-        <div style="display:flex; gap:5px; margin-bottom:10px;">
-            <input type="text" placeholder="Question" class="q-in" style="flex:1; padding:8px;">
-            <input type="text" placeholder="Answer" class="a-in" style="flex:1; padding:8px;">
-        </div>`;
+    document.getElementById('cards-input-area').innerHTML = '';
+    addNewInputRow(); // Start fresh with one blank row (which now has a delete button)
 }
         
-        function addNewInputRow() {
-            const div = document.createElement('div'); 
-            div.style.display='flex'; div.style.gap='5px'; div.style.marginBottom='10px';
-            div.innerHTML = `<input type="text" placeholder="Question" class="q-in" style="flex:1; padding:8px;"><input type="text" placeholder="Answer" class="a-in" style="flex:1; padding:8px;">`;
-            document.getElementById('cards-input-area').appendChild(div);
-        }
+        ffunction addNewInputRow(q = '', a = '') {
+    const container = document.getElementById('cards-input-area');
+    const div = document.createElement('div');
+    div.className = "card-input-row"; // Added a class for styling
+    div.style.display = 'flex';
+    div.style.gap = '5px';
+    div.style.marginBottom = '10px';
+    div.style.alignItems = 'center';
+
+    div.innerHTML = `
+        <input type="text" placeholder="Question" class="q-in" value="${q}" style="flex:1; padding:8px;">
+        <input type="text" placeholder="Answer" class="a-in" value="${a}" style="flex:1; padding:8px;">
+        // Replace this line inside the innerHTML of addNewInputRow:
+        <button onclick="if(document.querySelectorAll('.card-input-row').length > 1) { this.parentElement.remove() } else { alert('Set must have at least one card!') }" ...>×</button>
+    `;
+    container.appendChild(div);
+}
 
         // Initialize
         render();
