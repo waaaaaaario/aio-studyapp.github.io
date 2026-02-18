@@ -53,6 +53,68 @@
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             box-shadow: 0 4px 15px rgba(0,0,0,0.05);
         }
+        /* 3D Flashcard Styles */
+        .card-scene {
+            width: 400px;
+            height: 250px;
+            perspective: 1000px; /* Essential for 3D effect */
+            margin: 20px auto;
+            cursor: pointer;
+        }
+
+        .card-inner {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+
+        .card-inner.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden; /* Hides the back of the element when flipped */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .card-face-front {
+            background: white;
+            color: var(--primary-purple);
+            border: 2px solid #eee;
+        }
+
+        .card-face-back {
+            background: linear-gradient(135deg, var(--primary-purple), var(--secondary-blue));
+            color: white;
+            transform: rotateY(180deg); /* Pre-flip the back side */
+        }
+
+        .plus-btn {
+            background: var(--primary-purple);
+            color: white;
+            border: none;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .plus-btn:hover { transform: scale(1.1); }
 
         /* Calendar Card */
         .calendar-card {
@@ -156,18 +218,21 @@
                         </div>
                         <div id="player-ui" style="display:none; text-align:center; width:100%;">
                             <h3 id="active-set-title" style="margin-bottom:20px;">Set Title</h3>
+    
                             <div class="card-scene" onclick="document.getElementById('card-inner').classList.toggle('is-flipped')">
                                 <div class="card-inner" id="card-inner">
-                                    <div class="card-face" id="f-front">Question</div>
+                                    <div class="card-face card-face-front" id="f-front">Question</div>
                                     <div class="card-face card-face-back" id="f-back">Answer</div>
                                 </div>
                             </div>
-                            <div style="display:flex; gap:15px; justify-content:center; align-items:center;">
+
+                            <div style="display:flex; gap:15px; justify-content:center; align-items:center; margin-top: 20px;">
                                 <button onclick="prevC()" class="view-switcher button">Prev</button>
-                                <span id="c-count">1 / 1</span>
+                                <span id="c-count" style="font-weight: bold; min-width: 60px;">1 / 1</span>
                                 <button onclick="nextC()" class="view-switcher button">Next</button>
                             </div>
-                            <button onclick="exitPlayer()" style="margin-top:20px; color:red; border:none; background:none; cursor:pointer;">Close Player</button>
+    
+                            <button onclick="exitPlayer()" style="margin-top:20px; color:#999; border:none; background:none; cursor:pointer; font-weight:600;">Close Player</button>
                         </div>
                     </section>
                 </div>
