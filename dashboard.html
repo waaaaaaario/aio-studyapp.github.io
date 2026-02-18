@@ -227,9 +227,13 @@
                             </div>
                             <div style="display:flex; gap:15px; justify-content:center; align-items:center; margin-top: 20px;">
                                 <button onclick="prevC()" class="view-switcher button">Prev</button>
-                                <button onclick="shuffleDeck()" class="view-switcher button" style="background: #eef2ff;">🔀 Shuffle</button>
                                 <span id="c-count" style="font-weight: bold; min-width: 60px;">1 / 1</span>
                                 <button onclick="nextC()" class="view-switcher button">Next</button>
+                            </div>
+
+                            <div style="margin-top: 25px; display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                                <button onclick="shuffleDeck()" class="view-switcher button" style="background: #eef2ff; width: 120px;">🔀 Shuffle</button>
+                                <button onclick="exitPlayer()" style="color:#999; border:none; background:none; cursor:pointer; font-weight:600; font-size: 0.9rem;">Close Player</button>
                             </div>
     
                             <button onclick="exitPlayer()" style="margin-top:20px; color:#999; border:none; background:none; cursor:pointer; font-weight:600;">Close Player</button>
