@@ -387,36 +387,36 @@
         }
         // --- FLASHCARD LOGIC ---
         async function loadSets() {
-            const { data: { user } } = await _supabase.auth.getUser();
-            if (!user) return;
-        
-            // Fetch sets from Supabase
-        const { data, error } = await _supabase
-            .from('flashcard_sets')
-            .select('*')
-            .eq('user_id', user.id)
-            .order('created_at', { ascending: false });
+    const { data: { user } } = await _supabase.auth.getUser();
+    if (!user) return;
 
-        if (error) {
-           console.error("Error fetching sets:", error);
-            return;
-            }
+    const { data, error } = await _supabase
+        .from('flashcard_sets')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
 
-        const list = document.getElementById('saved-sets-list');
-    
-        // Clear and populate the list
-        if (data.length === 0) {
-            list.innerHTML = '<p style="color:#999; padding:10px;">No sets found.</p>';
-            return;
-        }
+    if (error) return console.error("Error:", error);
 
-        list.innerHTML = data.map(set => `
-            <div class="set-item" onclick='startPlaying(${JSON.stringify(set.cards).replace(/'/g, "&apos;")}, "${set.title}")'>
+    const list = document.getElementById('saved-sets-list');
+    if (data.length === 0) {
+        list.innerHTML = '<p style="color:#999; padding:10px;">No sets found.</p>';
+        return;
+    }
+
+    list.innerHTML = data.map(set => `
+        <div class="set-item" style="position:relative;">
+            <div onclick='startPlaying(${JSON.stringify(set.cards).replace(/'/g, "&apos;")}, "${set.title}")'>
                 <h4>${set.title}</h4>
                 <span>${set.cards.length} cards</span>
             </div>
-        `).join('');
-    }
+            <div style="margin-top:10px; display:flex; gap:10px;">
+                <button onclick='editSet(${JSON.stringify(set).replace(/'/g, "&apos;")})' style="font-size:0.8rem; cursor:pointer; background:none; border:1px solid #ddd; border-radius:4px; padding:2px 8px;">Edit</button>
+                <button onclick='deleteSet("${set.id}")' style="font-size:0.8rem; cursor:pointer; background:none; border:1px solid #ffb3b3; color:red; border-radius:4px; padding:2px 8px;">Delete</button>
+            </div>
+        </div>
+    `).join('');
+}
 
         async function saveSet() {
             const { data: { user } } = await _supabase.auth.getUser();
@@ -444,6 +444,21 @@
                 alert(error.message); 
             }
         }
+
+        async function deleteSet(setId) {
+    if (!confirm("Are you sure you want to delete this set? This cannot be undone.")) return;
+
+    const { error } = await _supabase
+        .from('flashcard_sets')
+        .delete()
+        .eq('id', setId);
+
+    if (!error) {
+        loadSets(); // Refresh the list
+    } else {
+        alert("Error deleting set: " + error.message);
+    }
+}
 
         function startPlaying(cards, title) {
             activeDeck = cards; 
