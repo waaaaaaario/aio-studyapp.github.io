@@ -43,23 +43,34 @@
             display: none;
         }
 
-        .toggle-btn {
-            position: absolute;
-            right: -15px;
-            top: 30px;
-            background: var(--primary-purple);
-            color: white;
-            border: none;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            cursor: pointer;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            z-index: 10;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+        /* Updated Toggle Button Style */
+.toggle-btn {
+    position: relative; /* Changed from absolute to sit in the flow */
+    width: 100%;        /* Takes full width of the sidebar padding */
+    height: 40px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px; /* Slightly rounded corners for a modern look */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px; /* Space between button and Dashboard */
+    transition: all 0.3s ease;
+}
+
+.toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* When collapsed, we want it to look like a square icon */
+.sidebar.collapsed .toggle-btn {
+    width: 40px;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 8px;
+}
         .nav-item { 
             color: rgba(255,255,255,0.7); text-decoration: none; margin-bottom: 15px; 
             font-weight: 600; padding: 12px; border-radius: 8px; transition: 0.3s; cursor: pointer;
@@ -242,8 +253,11 @@
 <body>
 
     <div class="layout">
-        <nav class="sidebar">
-            <h2><button class="toggle-btn" onclick="toggleSidebar()">STUDYAPP</button></h2>
+        <nav class="sidebar" id="sidebar">
+            <button class="toggle-btn" onclick="toggleSidebar()">
+                <span id="toggle-icon">☰</span>
+            </button>
+            <h2 style="margin-bottom: 20px;">STUDYAPP</h2>
             <div id="nav-dashboard" class="nav-item active" onclick="showSection('dashboard')">🏠 Dashboard</div>
             <div id="nav-calendar" class="nav-item" onclick="showSection('calendar')">📅 Calendar</div>
             <div id="nav-flashcards" class="nav-item" onclick="showSection('flashcards')">🃏 Flashcards</div>
@@ -346,8 +360,17 @@
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
         function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('collapsed');
-        }
+    const sidebar = document.getElementById('sidebar');
+    const icon = document.getElementById('toggle-icon');
+    
+    sidebar.classList.toggle('collapsed');
+    
+    if (sidebar.classList.contains('collapsed')) {
+        icon.innerText = '➜'; // Show arrow when collapsed
+    } else {
+        icon.innerText = '☰'; // Show bars when expanded
+    }
+}
 
         function showSection(id) {
             document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
